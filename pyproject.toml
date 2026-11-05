@@ -5,8 +5,10 @@ requires-python = ">=3.12"
 dependencies = [
     "dbt-duckdb>=1.11.1",
     "duckdb>=2.0.0",
+    "ipykernel>=7.4.0",
     "jupyterlab>=4.6.5",
     "pandas>=3.1.1",
+    "plotly>=7.1.0",
     "pyarrow>=26.0.1",
     "requests>=2.34.2",
     "statsmodels>=0.15.0",
