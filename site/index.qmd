@@ -1,0 +1,14 @@
+---
+title: "First 30 Days"
+subtitle: "How I'd measure whether new members get value, and whether proactive nudges help"
+---
+
+Work in progress. This cell is a smoke test that Python and Plotly run inside Quarto.
+
+```{python}
+import pandas as pd
+import plotly.express as px
+
+users = pd.read_csv("../data/raw/heartsteps/users.csv")
+px.histogram(users, x="age", nbins=10, title=f"HeartSteps participants by age (n = {len(users)})")
+```

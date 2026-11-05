@@ -1,0 +1,26 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "First 30 Days"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: funnel.qmd
+        text: Member funnel
+      - href: readout.qmd
+        text: Experiment readout
+      - href: memo.qmd
+        text: 30-day memo
+  page-footer:
+    center: "Public data only: HeartSteps V1 (Klasnja et al., 2019; CC BY 4.0) and FitRec/Endomondo (Ni et al., 2019). Not WHOOP data."
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+
+execute:
+  freeze: auto
