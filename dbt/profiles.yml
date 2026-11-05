@@ -1,0 +1,7 @@
+whoop:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ../data/whoop.duckdb
+      threads: 4
