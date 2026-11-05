@@ -230,3 +230,4 @@ site/node_modules/
 site/.evidence/
 site/build/
 .DS_Store
+data/clean/*.parquet
