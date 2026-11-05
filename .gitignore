@@ -231,3 +231,4 @@ site/.evidence/
 site/build/
 .DS_Store
 data/clean/*.parquet
+dbt/.user.yml
