@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: endomondo
+    description: "Endomondo workout metadata from the FitRec project (Ni, Muhlstein & McAuley, WWW 2019), flattened to one row per workout by scripts/flatten_endomondo.py."
+    meta:
+      external_location: "read_parquet('../data/clean/{name}.parquet')"
+    tables:
+      - name: endomondo_workouts
+
+  - name: heartsteps
+    description: "HeartSteps V1 micro-randomized trial (Klasnja et al., 2019), CC BY 4.0."
+    meta:
+      external_location: "read_csv('../data/raw/heartsteps/{name}.csv', sample_size = -1)"
+    tables:
+      - name: suggestions
+      - name: users

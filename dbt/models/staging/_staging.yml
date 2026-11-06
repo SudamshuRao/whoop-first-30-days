@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: stg_endomondo__workouts
+    description: "One row per Endomondo workout, impossible dates removed."
+    columns:
+      - name: workout_id
+        data_tests: [unique, not_null]
+      - name: user_id
+        data_tests: [not_null]
+      - name: start_ts
+        data_tests: [not_null]
+
+  - name: stg_heartsteps__decision_points
+    description: "One row per HeartSteps decision point."
+    columns:
+      - name: decision_point_id
+        data_tests: [unique, not_null]
+      - name: participant_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_heartsteps__participants')
+                field: participant_id
+      - name: is_available
+        data_tests: [not_null]
+      - name: location
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['home', 'work', 'other', 'unknown']
+      - name: response
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['good', 'bad', 'no_response', 'snoozed']
+
+  - name: stg_heartsteps__participants
+    description: "One row per HeartSteps participant."
+    columns:
+      - name: participant_id
+        data_tests: [unique, not_null]
