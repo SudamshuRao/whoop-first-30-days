@@ -22,8 +22,8 @@ vars:
   # Endomondo launched in 2007, so earlier dates are broken device clocks.
   # Collection ended at the turn of 2016: January 2016 has 54 workouts vs ~15,000 a month
   # before it, so it is a partial month. This date is also the data end for open lapses.
-  endomondo_valid_from: "2007-01-01"
-  endomondo_valid_to: "2016-01-01"
+  endomondo_valid_from: "2007-01-01 00:00:00+00"
+  endomondo_valid_to: "2016-01-01 00:00:00+00"
   # A lapse is a gap of this many days or more between a member's workouts.
   lapse_days: 14
   # "Returned" means a workout within this many days after the lapse is detected.

@@ -40,7 +40,7 @@ all_lapses as (
 )
 
 select
-    md5(user_id::varchar || '|' || last_workout_ts::varchar)  as lapse_id,
+    md5(user_id::varchar || '|' || epoch_ms(last_workout_ts)::varchar)  as lapse_id,
     user_id,
     last_workout_ts,
     last_workout_ts + to_days({{ var('lapse_days') }})        as detected_ts,
