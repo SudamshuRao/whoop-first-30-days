@@ -1,5 +1,95 @@
 ---
-title: "readout"
+title: "Experiment readout: proactive activity suggestions"
+subtitle: "Does a nudge get people moving in the next 30 minutes? (HeartSteps V1)"
 ---
 
-Coming in a later phase.
+```{python}
+#| echo: false
+import duckdb
+
+con = duckdb.connect("../data/whoop.duckdb", read_only=True)
+con.sql("set TimeZone = 'UTC'")
+
+def one(sql):
+    return con.sql(sql).fetchall()[0][0]
+
+PRIMARY = "from fct_decision_points where is_in_primary_analysis"
+n_people = one(f"select count(distinct participant_id) {PRIMARY}")
+n_dp = one(f"select count(*) {PRIMARY}")
+n_outcome = one(f"select count(*) {PRIMARY} and has_outcome")
+n_sent = one(f"select count(*) {PRIMARY} and is_sent")
+p_walk = one(f"select avg(coalesce(is_sent_walking, false)::int) {PRIMARY}")
+p_sed = one(f"select avg(coalesce(is_sent_anti_sedentary, false)::int) {PRIMARY}")
+n_travel = one("select count(*) from fct_decision_points where is_randomized and is_during_travel")
+n_zero = one(f"select count(*) {PRIMARY} and steps_30m_after = 0")
+miss_sent = one(f"select avg((not has_outcome)::int) {PRIMARY} and is_sent")
+miss_not = one(f"select avg((not has_outcome)::int) {PRIMARY} and not is_sent")
+```
+
+::: {.callout-note}
+## Status: analysis plan only
+
+This plan was written and committed **before any outcome was compared between the two arms**. The git history shows the plan commit comes before the results commit. Before writing it I had seen two things: the published results of this trial (listed under Benchmark below), and the randomization and missing-data checks in the [data audit](audit.qmd). Results will be added above this plan without changing it; any later change to the plan will be listed as a deviation.
+:::
+
+## The decision this informs
+
+WHOOP is adding proactive features such as Coach check-ins. The question for a product team is whether an unprompted nudge changes what members do soon after it arrives, and whether that is worth building and testing on WHOOP members. This readout cannot answer that for WHOOP directly. It uses a public trial to estimate whether nudges like this work at all, how large the effect is, and whether it fades, so that a WHOOP A/B test can be sized and designed well.
+
+## The experiment
+
+HeartSteps V1 was a six-week trial with sedentary adults. Five times a day, at moments when a participant was available (not driving, phone connected, not already exercising), the app randomly decided whether to send an activity suggestion. Each person was randomized hundreds of times, so every participant contributes to both arms. This design is called a micro-randomized trial.
+
+- **Participants:** `{python} n_people` (the published analysis sample)
+- **Randomized decision points:** `{python} f"{n_dp:,}"`, excluding `{python} f"{n_travel:,}"` during participants' travel, as in the published analysis
+- **Suggestions sent:** `{python} f"{n_sent:,}"` (`{python} f"{100 * n_sent / n_dp:.1f}"`%; the design was 60%)
+
+## Hypothesis
+
+Sending an activity suggestion at an available decision point increases the number of steps taken in the next 30 minutes, compared with sending nothing.
+
+## Primary metric
+
+**Steps in the 30 minutes after the decision point**, from the wrist tracker, analyzed as log(steps + 0.5) because step counts are heavily skewed. Results are reported as a percentage change and as extra steps at the average.
+
+## Analysis method
+
+- **Model:** regression of the primary metric on the treatment indicator centred at its randomization probability (sent minus 0.6), controlling for log steps in the 30 minutes before. Because the randomization probability is constant, this is the weighted and centred least squares estimator built for micro-randomized trials, with all weights equal to 1.
+- **Uncertainty:** standard errors clustered by participant, with a t distribution on `{python} n_people - 1` degrees of freedom, because there are only `{python} n_people` people and their decision points are not independent.
+- **Missing outcome:** the primary analysis uses decision points with a recorded 30-minute step count (`{python} f"{n_outcome:,}"` of `{python} f"{n_dp:,}"`). The file already records `{python} f"{n_zero:,}"` windows as zero steps, so a missing value means no tracker data rather than no walking. Missing outcomes are balanced between arms in this sample (`{python} f"{100 * miss_not:.1f}"`% with no suggestion vs `{python} f"{100 * miss_sent:.1f}"`% with one), which is what makes a complete-case comparison fair. A missing "before" count is set to zero with an indicator added to the model.
+- **Sensitivity analysis:** repeat the primary model treating every missing outcome as zero steps.
+
+## Pre-specified secondary analyses
+
+1. **Does the effect fade?** Add an interaction between treatment and study day.
+2. **Does the type of suggestion matter?** Walking suggestions and anti-sedentary ("get up and move") suggestions, each compared with no suggestion. The public files do not document the per-type randomization probabilities, so they are estimated from the data (walking `{python} f"{100 * p_walk:.0f}"`%, anti-sedentary `{python} f"{100 * p_sed:.0f}"`% of decision points) and used for centring.
+3. **Does location matter?** Home or work versus elsewhere.
+
+Anything else looked at later is labelled exploratory. Secondary results are treated as hypotheses for WHOOP's own test, not as proven.
+
+## Guardrails
+
+A micro-randomized trial gives every participant both arms, so person-level guardrails such as dropout or uninstalling cannot be compared between arms here. A member-level A/B test at WHOOP could compare them, and should. What this trial can track is how participants rated the suggestions they received, week by week:
+
+| Guardrail | Flag if |
+|---|---|
+| Share of sent suggestions rated "bad" | rises by more than 10 points from the first to the last full study week |
+| Share of sent suggestions with no response | rises by more than 10 points from the first to the last full study week |
+| Share of sent suggestions snoozed | above 5% in any week |
+
+## Decision rule
+
+| Result | Recommendation |
+|---|---|
+| Primary effect positive, 95% CI excludes zero, no guardrail flags | **Go:** build proactive check-ins and run a member-level A/B test |
+| Primary CI includes zero, but a pre-specified secondary analysis shows a positive effect with a CI excluding zero (for example early weeks only, or walking suggestions only); or a positive primary effect with a guardrail flag | **Go with changes:** test only the version that worked, with a frequency cap |
+| No pre-specified analysis shows a positive effect with a CI excluding zero | **No go:** do not build on this evidence |
+
+## Benchmark
+
+The published primary analysis (Klasnja et al., 2019) found that a suggestion increased 30-minute steps by 14% (p = .06), about 35 steps over a 253-step average, with an effect that started larger and faded over time. Walking suggestions increased steps by 24% (p = .02); anti-sedentary suggestions had no detectable effect. I expect to land near these numbers. The most likely source of any difference is missing data: the published analysis imputed missing step counts, while this one uses complete cases and reports zero-filling as a sensitivity check.
+
+## What this cannot tell us
+
+- **WHOOP members are not these participants.** These were sedentary adults in 2015 receiving walking prompts; WHOOP members are active and the behaviour that matters may be training, not walking.
+- **Thirty minutes is not retention.** A short-term step bump does not show that nudges bring lapsed members back. The [power analysis](memo.qmd) sizes the WHOOP test that would answer that.
