@@ -1,0 +1,24 @@
+version: 2
+
+seeds:
+  - name: review_hand_labels
+    description: "Hand labels for WHOOP reviews since the 5.0 launch: one row per review and theme, no review text. split = dev (100, adjudicated) or test (60, blind)."
+    columns:
+      - name: split
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['dev', 'test']
+      - name: review_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_reviews')
+                field: review_id
+      - name: theme
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('review_themes')
+                field: theme

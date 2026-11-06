@@ -79,3 +79,9 @@ models:
               arguments:
                 to: ref('review_themes')
                 field: theme
+
+  - name: fct_review_theme_accuracy
+    description: "Precision and recall of each keyword rule against hand labels, by split (dev = adjudicated 100, test = blind 60)."
+    columns:
+      - name: theme
+        data_tests: [not_null]

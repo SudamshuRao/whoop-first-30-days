@@ -34,4 +34,6 @@ vars:
 seeds:
   whoop_first_30_days:
     review_themes:
-      +column_types: {theme: varchar, label: varchar, pattern: varchar}
+      +column_types: {theme: varchar, label: varchar, definition: varchar, pattern: varchar}
+    review_hand_labels:
+      +column_types: {split: varchar, review_id: varchar, theme: varchar, is_mentioned: integer}
