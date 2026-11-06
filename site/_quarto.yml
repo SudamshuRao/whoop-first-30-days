@@ -8,8 +8,10 @@ website:
     left:
       - href: index.qmd
         text: Home
+      - href: audit.qmd
+        text: Data audit
       - href: funnel.qmd
-        text: Member funnel
+        text: Lapses & returns
       - href: readout.qmd
         text: Experiment readout
       - href: memo.qmd

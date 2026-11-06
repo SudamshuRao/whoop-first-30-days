@@ -1,0 +1,78 @@
+---
+title: "Data audit"
+subtitle: "What each dataset can and cannot support, checked before any analysis"
+---
+
+```{python}
+#| echo: false
+import duckdb
+import plotly.express as px
+
+con = duckdb.connect()
+con.sql("set TimeZone = 'UTC'")
+con.sql("create view w as select * from read_parquet('../data/clean/endomondo_workouts.parquet')")
+con.sql("create view s as select * from read_csv('../data/raw/heartsteps/suggestions.csv', sample_size = -1)")
+
+def one(sql):
+    return con.sql(sql).fetchall()[0][0]
+
+# Endomondo: valid window is 2007 (Endomondo launched) through 2016 (data collected)
+VALID = "start_ts >= '2007-01-01' and start_ts < '2017-01-01'"
+n_workouts = one("select count(*) from w")
+n_users = one("select count(distinct user_id) from w")
+n_bad_dates = one(f"select count(*) from w where not ({VALID})")
+per_user = con.sql(f"""
+    select user_id, count(*) as workouts,
+           date_diff('day', min(start_ts), max(start_ts)) as span_days
+    from w where {VALID} group by 1
+""").df()
+med_workouts = per_user["workouts"].median()
+med_span_years = per_user["span_days"].median() / 365.25
+users_under_10 = int((per_user["workouts"] < 10).sum())
+
+# HeartSteps
+n_dp = one("select count(*) from s")
+n_avail = one("select count(*) from s where avail")
+pct_sent = 100 * one("select avg(send::int) from s where avail")
+miss = con.sql("""select send, avg((jbsteps30 is null)::int) * 100 as pct
+                  from s where avail group by 1 order by 1""").df()
+bal = con.sql("""select send, avg(ln(jbsteps30pre + 0.5)) as m
+                 from s where avail group by 1 order by 1""").df()
+```
+
+## Summary
+
+| Dataset | Verdict | Used for |
+|---|---|---|
+| Endomondo (FitRec) | **Go, with a narrower question.** Only long-term users are in the data, so it cannot give retention or activation rates. | Lapses and returns among established members |
+| HeartSteps V1 | **Go.** The randomization ran as designed. | The experiment readout |
+
+## Endomondo: who is in the data?
+
+The file holds `{python} f"{n_workouts:,}"` workouts from `{python} f"{n_users:,}"` users. `{python} f"{n_bad_dates:,}"` workouts (`{python} f"{100 * n_bad_dates / n_workouts:.2f}"`%) have impossible dates, before Endomondo launched in 2007 or after the data was collected, and are dropped.
+
+The bigger finding is who was kept. The median user has `{python} f"{med_workouts:,.0f}"` workouts over `{python} f"{med_span_years:.1f}"` years, and only `{python} users_under_10` users have fewer than 10. Real app data always has many people who try the app a few times and leave. Their absence means the dataset was built from long-term users, so any retention rate measured here would be near 100% by construction.
+
+```{python}
+#| echo: false
+fig = px.histogram(per_user, x="workouts", nbins=60,
+                   title="Workouts per user: almost no light users",
+                   labels={"workouts": "Workouts per user"})
+fig.update_layout(yaxis_title="Users", bargap=0.05)
+fig
+```
+
+**Decision:** the project does not report retention or activation rates from this data. It studies what long-term members do have plenty of: lapses (14 or more days without a workout) and returns.
+
+## HeartSteps: did the trial run as designed?
+
+Of `{python} f"{n_dp:,}"` decision points, `{python} f"{n_avail:,}"` (`{python} f"{100 * n_avail / n_dp:.1f}"`%) were available for randomization. Among those, `{python} f"{pct_sent:.1f}"`% received a suggestion, against a design of 60%.
+
+| Check | No suggestion | Suggestion sent | Reads as |
+|---|---|---|---|
+| Missing 30-minute step outcome | `{python} f"{miss.pct[0]:.1f}"`% | `{python} f"{miss.pct[1]:.1f}"`% | Missing data is not driven by the nudge |
+| Mean log steps in the 30 minutes before | `{python} f"{bal.m[0]:.2f}"` | `{python} f"{bal.m[1]:.2f}"` | Groups looked alike beforehand |
+
+**Decision:** go. Excluded from analysis: decision points with no recorded context, and 3 suggestions sent while the participant was marked unavailable.
+
+This audit deliberately does not compare step counts after the nudge. That comparison is in the experiment readout, after the analysis plan was written down.
