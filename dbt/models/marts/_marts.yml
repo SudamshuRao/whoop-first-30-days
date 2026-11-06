@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: fct_workouts
+    description: "One row per Endomondo workout with sport group and position in the member's history."
+    columns:
+      - name: workout_id
+        data_tests: [unique, not_null]
+      - name: user_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_members')
+                field: user_id
+      - name: sport_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['running', 'cycling', 'walking', 'strength', 'swimming', 'other']
+
+  - name: dim_members
+    description: "One row per Endomondo member."
+    columns:
+      - name: user_id
+        data_tests: [unique, not_null]
+
+  - name: fct_lapses
+    description: "One row per lapse with the member's activity going into it."
+    columns:
+      - name: lapse_id
+        data_tests: [unique, not_null]
+      - name: user_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_members')
+                field: user_id
+
+  - name: fct_member_weeks
+    description: "One row per member per week since their first workout, including inactive weeks."
+    columns:
+      - name: user_id
+        data_tests: [not_null]
+      - name: week_number
+        data_tests: [not_null]
+
+  - name: fct_decision_points
+    description: "HeartSteps decision points ready for the readout; is_in_primary_analysis matches the published sample."
+    columns:
+      - name: decision_point_id
+        data_tests: [unique, not_null]
+
+  - name: dim_participants
+    description: "One row per HeartSteps participant."
+    columns:
+      - name: participant_id
+        data_tests: [unique, not_null]
