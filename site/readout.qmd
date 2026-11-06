@@ -80,7 +80,7 @@ hi = [curve[d]["pct_hi"] for d in days]
 fig = go.Figure([
     go.Scatter(x=days + days[::-1], y=hi + lo[::-1], fill="toself", fillcolor="rgba(99,110,250,0.18)",
                line=dict(width=0), hoverinfo="skip", name="95% CI"),
-    go.Scatter(x=days, y=mid, line=dict(width=3, color="#636EFA"), name="Estimated effect"),
+    go.Scatter(x=days, y=mid, line=dict(width=3, color="#636EFA"), name="Estimated effect", hovertemplate="Day %{x}: %{y:+.1f}%<extra></extra>"),
 ])
 fig.add_hline(y=0, line_dash="dot")
 fig.update_layout(title="Extra steps from a suggestion, by day of the study",
@@ -106,7 +106,7 @@ fig.add_trace(go.Scatter(
     error_x=dict(type="data", symmetric=False,
                  array=[e["pct_hi"] - e["pct"] for _, e, _ in rows],
                  arrayminus=[e["pct"] - e["pct_lo"] for _, e, _ in rows]),
-    name="This analysis"))
+    hovertemplate="%{y}: %{x:+.1f}%<extra></extra>", name="This analysis"))
 pub = [(n, v) for n, _, v in rows if v is not None]
 fig.add_trace(go.Scatter(x=[v for _, v in pub], y=[n for n, _ in pub], mode="markers",
                          marker=dict(symbol="diamond-open", size=13, color="#EF553B"),
@@ -125,7 +125,7 @@ Walking suggestions worked (`{python} est(walk)`; published +24%). Anti-sedentar
 ```{python}
 #| echo: false
 gw = g.loc[1:6]
-fig = go.Figure([go.Scatter(x=gw.index, y=100 * gw[c], mode="lines+markers", name=n)
+fig = go.Figure([go.Scatter(x=gw.index, y=100 * gw[c], mode="lines+markers", name=n, hovertemplate="Week %{x}: %{y:.1f}%")
                  for c, n in [("bad", "Rated bad"), ("no_response", "No response"), ("snoozed", "Snoozed")]])
 fig.update_layout(title="How participants responded to suggestions, by study week",
                   xaxis_title="Study week", yaxis_title="% of suggestions sent", yaxis_range=[0, 40],
@@ -133,7 +133,7 @@ fig.update_layout(title="How participants responded to suggestions, by study wee
 fig.show(config={"displayModeBar": False})
 ```
 
-No guardrail was flagged. "Bad" ratings went from `{python} f"{100 * g.loc[1, 'bad']:.1f}"`% in week 1 to `{python} f"{100 * g.loc[6, 'bad']:.1f}"`% in week 6, "no response" from `{python} f"{100 * g.loc[1, 'no_response']:.1f}"`% to `{python} f"{100 * g.loc[6, 'no_response']:.1f}"`%, and snoozes never passed `{python} f"{100 * g['snoozed'].max():.1f}"`%.
+No guardrail was flagged. "Bad" ratings went from `{python} f"{100 * g.loc[1, 'bad']:.1f}"`% in week 1 to `{python} f"{100 * g.loc[6, 'bad']:.1f}"`% in week 6 (peaking at `{python} f"{100 * g.loc[1:6, 'bad'].max():.1f}"`% in week `{python} int(g.loc[1:6, 'bad'].idxmax())`), "no response" from `{python} f"{100 * g.loc[1, 'no_response']:.1f}"`% to `{python} f"{100 * g.loc[6, 'no_response']:.1f}"`%, and snoozes never passed `{python} f"{100 * g['snoozed'].max():.1f}"`%.
 
 The more useful finding is what the guardrails missed: ratings stayed flat while the effect itself disappeared. Participants stopped acting on suggestions without telling anyone they were tired of them.
 
