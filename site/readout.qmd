@@ -27,10 +27,130 @@ miss_not = one(f"select avg((not has_outcome)::int) {PRIMARY} and not is_sent")
 ```
 
 ::: {.callout-note}
-## Status: analysis plan only
+## Status: results added
 
-This plan was written and committed **before any outcome was compared between the two arms**. The git history shows the plan commit comes before the results commit. Before writing it I had seen two things: the published results of this trial (listed under Benchmark below), and the randomization and missing-data checks in the [data audit](audit.qmd). Results will be added above this plan without changing it; any later change to the plan will be listed as a deviation.
+The analysis plan at the bottom of this page was committed before any outcome was compared (commit e39c0a7). The results were computed and committed afterwards (b3e15ea), exactly as planned. The plan text below is unchanged.
 :::
+
+```{python}
+#| echo: false
+import sys
+from pathlib import Path
+
+import plotly.graph_objects as go
+
+sys.path.insert(0, str(Path("../analysis").resolve()))
+from readout_models import run_all
+
+r = run_all(con)
+prim, zf = r["primary"], r["sensitivity_zero_fill"]
+d0, d20, d30 = r["by_day"][0], r["by_day"][20], r["by_day"][30]
+walk, sed = r["walking"], r["anti_sedentary"]
+g = r["guardrails_by_week"]
+flags = r["guardrail_flags"]
+
+def est(e):
+    return f"{e['pct']:+.1f}% (95% CI {e['pct_lo']:+.1f}% to {e['pct_hi']:+.1f}%)"
+```
+
+::: {.callout-tip}
+## Result: `{python} r["decision"]`, under the pre-registered rule
+
+A suggestion increased steps in the next 30 minutes by **`{python} est(prim)`**, about `{python} f"{prim['steps']:+.0f}"` steps on a `{python} f"{r['baseline_steps']:.0f}"`-step average, with no guardrail flags. The effect is real but fragile and short-lived: the confidence interval only just excludes zero, and the effect fades to nothing within about a month.
+:::
+
+## Results
+
+The analysis below follows the plan further down this page exactly. The plan was committed first (e39c0a7) and the results second (b3e15ea); there are no deviations.
+
+### The headline, and how confident to be
+
+- **Primary:** `{python} est(prim)`, p = `{python} f"{prim['p']:.3f}"`. The published analysis of the same trial found +14% (p = .06), so the two agree closely.
+- **Sensitivity:** treating missing step counts as zero gives `{python} est(zf)`, p = `{python} f"{zf['p']:.3f}"`. The same evidence lands on either side of p = .05 depending on how missing data is handled, so the effect should be read as modest and uncertain, not as proven.
+
+### The effect fades
+
+```{python}
+#| echo: false
+curve = r["by_day_curve"]
+days = list(curve)
+mid = [curve[d]["pct"] for d in days]
+lo = [curve[d]["pct_lo"] for d in days]
+hi = [curve[d]["pct_hi"] for d in days]
+fig = go.Figure([
+    go.Scatter(x=days + days[::-1], y=hi + lo[::-1], fill="toself", fillcolor="rgba(99,110,250,0.18)",
+               line=dict(width=0), hoverinfo="skip", name="95% CI"),
+    go.Scatter(x=days, y=mid, line=dict(width=3, color="#636EFA"), name="Estimated effect"),
+])
+fig.add_hline(y=0, line_dash="dot")
+fig.update_layout(title="Extra steps from a suggestion, by day of the study",
+                  xaxis_title="Study day", yaxis_title="% change in 30-minute steps",
+                  margin=dict(t=70), legend=dict(orientation="h", yanchor="top", y=-0.2, x=0))
+fig.show(config={"displayModeBar": False})
+```
+
+On the first day a suggestion added `{python} est(d0)`. By day 20 it was `{python} est(d20)`, and by day 30 `{python} est(d30)`, no longer distinguishable from zero. The model assumes a straight-line decline, so the exact shape is an approximation; the decline itself is clear (`{python} f"{r['decay_slope']['pct']:+.1f}"`% per day, p = `{python} f"{r['decay_slope']['p']:.3f}"`) and matches the published finding that the effect started large and faded.
+
+### What worked and what did not
+
+```{python}
+#| echo: false
+rows = [("Primary: any suggestion", prim, 14.0), ("Missing = 0 steps", zf, None),
+        ("Day 0 of the study", d0, None), ("Day 30 of the study", d30, None),
+        ("Walking suggestions", walk, 24.0), ("Anti-sedentary suggestions", sed, None),
+        ("At home or work", r["home_or_work"], None), ("Elsewhere", r["elsewhere"], None)]
+labels = [n for n, _, _ in rows]
+fig = go.Figure()
+fig.add_trace(go.Scatter(
+    x=[e["pct"] for _, e, _ in rows], y=labels, mode="markers", marker=dict(size=10, color="#636EFA"),
+    error_x=dict(type="data", symmetric=False,
+                 array=[e["pct_hi"] - e["pct"] for _, e, _ in rows],
+                 arrayminus=[e["pct"] - e["pct_lo"] for _, e, _ in rows]),
+    name="This analysis"))
+pub = [(n, v) for n, _, v in rows if v is not None]
+fig.add_trace(go.Scatter(x=[v for _, v in pub], y=[n for n, _ in pub], mode="markers",
+                         marker=dict(symbol="diamond-open", size=13, color="#EF553B"),
+                         name="Published (Klasnja et al., 2019)"))
+fig.add_vline(x=0, line_dash="dot")
+fig.update_layout(title="Effect on 30-minute steps, with 95% CIs", xaxis_title="% change",
+                  yaxis=dict(autorange="reversed"), margin=dict(l=200, t=70),
+                  legend=dict(orientation="h", yanchor="top", y=-0.2, x=0))
+fig.show(config={"displayModeBar": False})
+```
+
+Walking suggestions worked (`{python} est(walk)`; published +24%). Anti-sedentary suggestions did not (`{python} est(sed)`). Location made no clear difference: both intervals cross zero.
+
+### Guardrails
+
+```{python}
+#| echo: false
+gw = g.loc[1:6]
+fig = go.Figure([go.Scatter(x=gw.index, y=100 * gw[c], mode="lines+markers", name=n)
+                 for c, n in [("bad", "Rated bad"), ("no_response", "No response"), ("snoozed", "Snoozed")]])
+fig.update_layout(title="How participants responded to suggestions, by study week",
+                  xaxis_title="Study week", yaxis_title="% of suggestions sent", yaxis_range=[0, 40],
+                  margin=dict(t=70), legend=dict(orientation="h", yanchor="top", y=-0.2, x=0))
+fig.show(config={"displayModeBar": False})
+```
+
+No guardrail was flagged. "Bad" ratings went from `{python} f"{100 * g.loc[1, 'bad']:.1f}"`% in week 1 to `{python} f"{100 * g.loc[6, 'bad']:.1f}"`% in week 6, "no response" from `{python} f"{100 * g.loc[1, 'no_response']:.1f}"`% to `{python} f"{100 * g.loc[6, 'no_response']:.1f}"`%, and snoozes never passed `{python} f"{100 * g['snoozed'].max():.1f}"`%.
+
+The more useful finding is what the guardrails missed: ratings stayed flat while the effect itself disappeared. Participants stopped acting on suggestions without telling anyone they were tired of them.
+
+### What this means for WHOOP
+
+1. **Test proactive check-ins, and plan for the fade.** Measure the effect by week, not just overall; a check-in that works in week one may do nothing by week five.
+2. **Make the ask specific.** Walking suggestions, which named an action, worked; generic "get up and move" prompts did not.
+3. **Do not rely on ratings as the fatigue guardrail.** Track the behavioural effect itself over time, and in a member-level test also track opt-outs and churn, which this design could not compare.
+4. **Size the test for a small effect.** If the WHOOP effect is in this range, the test needs many members; the [power analysis](memo.qmd) works out how many.
+
+### Notes on implementation
+
+- "Last full study week" in the guardrail rule was taken as **week 6**, because the trial ran six weeks; weeks 7 to 9 contain only `{python} f"{int(g.loc[7:, 'sent'].sum()):,}"` suggestions from a few late participants.
+- Average steps are reported for decision points with no suggestion (`{python} f"{r['baseline_steps']:.0f}"`); the published 253 was an average over all decision points, so the step figures are close but not identical in definition.
+
+# Analysis plan (written before the results)
+
 
 ## The decision this informs
 

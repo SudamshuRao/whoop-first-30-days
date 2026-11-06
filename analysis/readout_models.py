@@ -74,6 +74,8 @@ def run_all(con: duckdb.DuckDBPyConnection) -> dict:
     m, dof = _fit(cc, "y", ["a_c", "a_c_x_day", "study_day"] + controls)
     out["by_day"] = {d: _effect(m, dof, {"a_c": 1, "a_c_x_day": d}, baseline) for d in (0, 10, 20, 30, 40)}
     out["decay_slope"] = _effect(m, dof, {"a_c_x_day": 1}, baseline)
+    # Same model, evaluated on every day of the six-week trial, for the chart
+    out["by_day_curve"] = {d: _effect(m, dof, {"a_c": 1, "a_c_x_day": d}, baseline) for d in range(0, 42)}
 
     # Secondary 2: walking vs anti-sedentary, each vs nothing (probabilities estimated from the data)
     p_walk, p_sed = df["is_walk"].mean(), df["is_sed"].mean()
