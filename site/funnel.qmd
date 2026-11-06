@@ -1,5 +1,176 @@
 ---
-title: "funnel"
+title: "Lapses and returns"
+subtitle: "How established members drift away, and who comes back"
 ---
 
-Coming in a later phase.
+```{python}
+#| echo: false
+import sys
+from pathlib import Path
+
+import duckdb
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+
+sys.path.insert(0, str(Path("../analysis").resolve()))
+from lapse_data import REPEAT, load_lapses
+from survival import kaplan_meier, median_duration, returned_by
+
+con = duckdb.connect("../data/whoop.duckdb", read_only=True)
+con.sql("set TimeZone = 'UTC'")
+lapses = load_lapses(con)
+
+def pct(x):
+    return f"{100 * x:.1f}%"
+
+def one(sql):
+    return con.sql(sql).fetchall()[0][0]
+
+n_lapses = len(lapses)
+n_members = one("select count(*) from dim_members")
+n_members_lapsed = lapses["user_id"].nunique()
+n_censored = int(lapses["is_censored"].sum())
+
+overall = kaplan_meier(lapses["lapse_days"], lapses["ended"])
+back14, back14_lo, back14_hi = returned_by(overall, 28)
+back7 = returned_by(overall, 21)[0]
+back90 = returned_by(overall, 90)[0]
+back365 = returned_by(overall, 365)[0]
+median_lapse = median_duration(overall)
+per_year = one("""
+    select median(n_lapses / (tenure_days / 365.25)) from dim_members where tenure_days > 0
+""")
+
+gaps = con.sql("""
+    select avg((w.days_since_prev >= 14)::int) as fixed,
+           avg((w.days_since_prev >= 3 * m.median_gap_days)::int) as personal
+    from fct_workouts w join dim_members m using (user_id)
+    where w.days_since_prev is not null
+""").df().iloc[0]
+
+def group_table(col):
+    rows = []
+    for name, g in lapses.dropna(subset=[col]).groupby(col, observed=True):
+        if len(g) < 50:
+            continue
+        curve = kaplan_meier(g["lapse_days"], g["ended"])
+        share, lo, hi = returned_by(curve, 28)
+        rows.append({"group": str(name), "lapses": len(g), "share": share, "lo": lo, "hi": hi,
+                     "median_days": median_duration(curve)})
+    return pd.DataFrame(rows, columns=["group", "lapses", "share", "lo", "hi", "median_days"])
+
+past = group_table("activity_group")
+ahead = group_table("activity_group_lookahead")
+
+def share_of(table, name):
+    hit = table.loc[table["group"] == name, "share"]
+    return float(hit.iloc[0]) if len(hit) else float("nan")
+
+repeat_share = share_of(past, REPEAT)
+others = past[past["group"] != REPEAT]
+others_range = (others["share"].min(), others["share"].max()) if len(others) else (np.nan, np.nan)
+n_repeat = int((lapses["activity_group"] == REPEAT).sum())
+
+def slowdown_gap(table):
+    """Points between 'under half of usual' and the average of the other three activity groups."""
+    rest = table[table["group"].isin(["50-90% of usual", "about usual", "above usual"])]["share"]
+    return 100 * (rest.mean() - share_of(table, "under half of usual"))
+
+gap_past = slowdown_gap(past)
+gap_ahead = slowdown_gap(ahead)
+personal_per_year = one("""
+    with per_member as (
+        select m.user_id, m.tenure_days,
+               sum((w.days_since_prev >= 3 * m.median_gap_days)::int) as personal_lapses
+        from fct_workouts w join dim_members m using (user_id)
+        where w.days_since_prev is not null and m.tenure_days > 0
+        group by all
+    )
+    select median(personal_lapses / (tenure_days / 365.25)) from per_member
+""")
+```
+
+## The answer in four lines
+
+- **Lapses are common but mostly temporary.** The `{python} f"{n_members:,}"` members had `{python} f"{n_lapses:,}"` lapses (14+ days without a workout), about `{python} f"{per_year:.1f}"` a year for the median member. The median lapse lasts `{python} f"{median_lapse:.0f}"` days.
+- **`{python} pct(back14)` come back within 14 days** of the lapse being detected (95% CI `{python} pct(back14_lo)` to `{python} pct(back14_hi)`), and `{python} pct(back90)` within 90 days.
+- **A comeback is fragile.** When a member returns after 12+ weeks away and goes quiet again, only `{python} pct(repeat_share)` are back within 14 days, against `{python} pct(others_range[0])` to `{python} pct(others_range[1])` for everyone else.
+- **A milder slowdown matters less than it first looked.** Measured against the member's own last 12 weeks, members at under half their usual volume return about `{python} f"{gap_past:.0f}"` points less often than the other activity groups. An earlier version that used each member's whole history, future included, put the gap at `{python} f"{gap_ahead:.0f}"` points.
+
+These are associations in observational data, not causes. The data holds only long-term members (see the [data audit](audit.qmd)).
+
+## How fast do members come back?
+
+```{python}
+#| echo: false
+def curve_xy(df, max_day=180):
+    c = kaplan_meier(df["lapse_days"], df["ended"])
+    days = np.arange(14, max_day + 1)
+    return days, [100 * returned_by(c, d)[0] for d in days]
+
+fig = go.Figure()
+x, y = curve_xy(lapses)
+fig.add_trace(go.Scatter(x=x, y=y, name="All lapses", line=dict(width=3)))
+repeat = lapses[lapses["activity_group"] == REPEAT]
+if len(repeat) >= 50:
+    x, y = curve_xy(repeat)
+    fig.add_trace(go.Scatter(x=x, y=y, name="Back after 12+ weeks away", line=dict(dash="dash")))
+fig.add_vline(x=28, line_dash="dot", annotation_text="14 days after detection", annotation_position="top left")
+fig.update_layout(title="Share of lapses that have ended, by days since the last workout",
+                  xaxis_title="Days since last workout (a lapse starts counting at day 14)",
+                  yaxis_title="% back", yaxis_range=[0, 100], hovermode="x unified")
+fig
+```
+
+Kaplan–Meier estimate. `{python} f"{n_censored:,}"` lapses were still open when data collection ended; they count as "not yet back" for as long as they were observed, rather than being dropped or counted as never returning.
+
+## Who comes back fastest?
+
+Activity in the 28 days before the lapse, compared with the same member's previous 12 weeks. This is something a live trigger could compute, because it uses only the past.
+
+```{python}
+#| echo: false
+if len(past):
+    order = ["under half of usual", "50-90% of usual", "about usual", "above usual", REPEAT]
+    p = past.set_index("group").reindex([o for o in order if o in set(past["group"])]).reset_index()
+    fig = go.Figure(go.Bar(
+        x=100 * p["share"], y=p["group"], orientation="h",
+        error_x=dict(type="data", symmetric=False,
+                     array=100 * (p["hi"] - p["share"]), arrayminus=100 * (p["share"] - p["lo"])),
+        text=[f"{100 * s:.0f}%  (n={n:,})" for s, n in zip(p["share"], p["lapses"])],
+        textposition="outside"))
+    fig.update_layout(title="Back within 14 days of the lapse being detected (95% CI)",
+                      xaxis_title="% back within 14 days", xaxis_range=[0, 100],
+                      yaxis=dict(autorange="reversed"), margin=dict(l=180))
+    fig
+```
+
+**Why the past-only baseline:** an earlier version compared each member with their whole-history average, which includes months after the lapse. That version put the "under half of usual" group at `{python} pct(share_of(ahead, "under half of usual"))` back within 14 days. Using only the past it is `{python} pct(share_of(past, "under half of usual"))`. The gap to the other groups went from `{python} f"{gap_ahead:.0f}"` to `{python} f"{gap_past:.0f}"` points, so the smaller number is the one reported here. The `{python} f"{n_repeat:,}"` "back after 12+ weeks away" lapses are members with no workouts in that 12-week window.
+
+## What did not matter much
+
+```{python}
+#| echo: false
+def compare(col, labels=None):
+    t = group_table(col)
+    return ", ".join(f"{r.group} {100 * r.share:.0f}%" for r in t.itertuples())
+
+lapses["season"] = lapses["lapse_month"].map({12: "Dec-Feb", 1: "Dec-Feb", 2: "Dec-Feb", 3: "Mar-May",
+    4: "Mar-May", 5: "Mar-May", 6: "Jun-Aug", 7: "Jun-Aug", 8: "Jun-Aug", 9: "Sep-Nov", 10: "Sep-Nov", 11: "Sep-Nov"})
+rhythm_txt = compare("rhythm")
+sport_txt = compare("primary_sport_group")
+season_txt = compare("season")
+```
+
+Share back within 14 days, by group:
+
+- **Training rhythm:** `{python} rhythm_txt`
+- **Primary sport:** `{python} sport_txt`
+- **Season the lapse started:** `{python} season_txt` (calendar months; members' hemisphere is unknown)
+
+Rhythm and sport barely move the number. Autumn lapses run a little longer than winter ones, consistent with holiday breaks that end in January, but that is a guess, not something this data can show.
+
+## Why 14 days, not a personal threshold
+
+A personal rule (a gap of at least 3x the member's usual gap) flagged `{python} pct(gaps.personal)` of all gaps against `{python} pct(gaps.fixed)` for 14 days. Most members train almost daily, so the personal rule treated a long weekend as a lapse. As a trigger for check-ins it would message the median member about `{python} f"{personal_per_year:.0f}"` times a year, mostly about a normal rest break. A personal trigger needs a floor, such as at least 7 days, before it would be usable.
