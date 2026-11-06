@@ -41,3 +41,15 @@ models:
     columns:
       - name: participant_id
         data_tests: [unique, not_null]
+
+  - name: stg_reviews__google_play
+    description: "One row per review with text, with sentiment from the star rating and the WHOOP 5.0 era flag."
+    columns:
+      - name: review_id
+        data_tests: [unique, not_null]
+      - name: score
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false

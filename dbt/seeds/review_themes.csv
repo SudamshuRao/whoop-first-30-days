@@ -1,0 +1,9 @@
+theme,label,pattern
+price_membership,"Price, membership and cancelling",subscri|membership|expensive|overpriced|price|pricing|money|\bcost|refund|cancel|\bpaid\b|\bpay|trial|upgrad|renew|scam|\$|£|€
+app_reliability,"App crashes, bugs and log-in",crash|\bbug|glitch|freez|not (working|loading|opening|responding)|stopped working|no longer (opens?|works?|loads?|syncs?)|(won.?t|doesn.?t|does not|will not|can.?t) (open|load|work|log)|reinstall|uninstall|log(ged)? ?(in|out)|password
+sync_connection,Sync and Bluetooth,sync|bluetooth|connect|pairing|\bpair
+hardware_battery,"Battery, band and device",battery|charg|strap|\bband\b|\bbands\b|sensor|hardware|replacement|broke
+support,Customer support,customer service|support|\bagent|no response|never (replied|responded|heard)|contacted|ticket
+accuracy,Data accuracy,accura|incorrect|wrong (data|reading|number)|\breadings?\b|calibrat|not (tracking|tracked|recording|detecting)|didn.?t (track|detect|record)
+coaching_insights,"Coaching, insights and AI",coach|insight|recommend|\bai\b|advice|guidance|understand|learn|personali
+habits_motivation,"Motivation, habits and accountability",motivat|accountab|habit|\bconsisten(t|cy)\b|discipline|keeps me|changed my life|life chang|game chang|lifestyle|routine|\bgoals?\b

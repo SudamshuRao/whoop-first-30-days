@@ -55,3 +55,27 @@ models:
     columns:
       - name: participant_id
         data_tests: [unique, not_null]
+
+  - name: fct_reviews
+    description: "One row per WHOOP app review with text, sentiment, era and number of themes mentioned."
+    columns:
+      - name: review_id
+        data_tests: [unique, not_null]
+
+  - name: fct_review_themes
+    description: "One row per review and theme, from the keyword rules in seeds/review_themes.csv."
+    columns:
+      - name: review_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_reviews')
+                field: review_id
+      - name: theme
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('review_themes')
+                field: theme

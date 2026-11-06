@@ -15,3 +15,10 @@ sources:
     tables:
       - name: suggestions
       - name: users
+
+  - name: reviews
+    description: "Public Google Play reviews of the WHOOP app (com.whoop.android), English, US store. Downloaded by scripts/download_reviews.py without reviewer names."
+    meta:
+      external_location: "read_parquet('../data/raw/reviews/{name}.parquet')"
+    tables:
+      - name: whoop_google_play

@@ -28,3 +28,10 @@ vars:
   lapse_days: 14
   # "Returned" means a workout within this many days after the lapse is detected.
   return_window_days: 14
+  # WHOOP 5.0 and MG launched on this date, with new membership tiers; reviews are compared before and after.
+  whoop_5_launch_date: "2025-05-08"
+
+seeds:
+  whoop_first_30_days:
+    review_themes:
+      +column_types: {theme: varchar, label: varchar, pattern: varchar}
