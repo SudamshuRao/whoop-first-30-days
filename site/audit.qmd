@@ -51,7 +51,7 @@ bal = con.sql("""select send, avg(ln(jbsteps30pre + 0.5)) as m
 
 The file holds `{python} f"{n_workouts:,}"` workouts from `{python} f"{n_users:,}"` users. `{python} f"{n_bad_dates:,}"` workouts (`{python} f"{100 * n_bad_dates / n_workouts:.2f}"`%) have impossible dates, before Endomondo launched in 2007 or after the data was collected, and are dropped.
 
-The bigger finding is who was kept. The median user has `{python} f"{med_workouts:,.0f}"` workouts over `{python} f"{med_span_years:.1f}"` years, and only `{python} users_under_10` users have fewer than 10. Real app data always has many people who try the app a few times and leave. Their absence means the dataset was built from long-term users, so any retention rate measured here would be near 100% by construction.
+The bigger finding is who was kept. The median user has `{python} f"{med_workouts:,.1f}"` workouts over `{python} f"{med_span_years:.1f}"` years, and only `{python} users_under_10` users have fewer than 10. Real app data always has many people who try the app a few times and leave. Their absence means the dataset was built from long-term users, so any retention rate measured here would be near 100% by construction.
 
 ```{python}
 #| echo: false
