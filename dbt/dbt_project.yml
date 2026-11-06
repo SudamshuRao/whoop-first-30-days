@@ -22,3 +22,7 @@ vars:
   # Endomondo launched in 2007; the data was collected by 2016. Anything outside is a broken device clock.
   endomondo_valid_from: "2007-01-01"
   endomondo_valid_to: "2017-01-01"
+  # A lapse is a gap of this many days or more between a member's workouts.
+  lapse_days: 14
+  # "Returned" means a workout within this many days after the lapse is detected.
+  return_window_days: 14

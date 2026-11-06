@@ -5,3 +5,5 @@ whoop:
       type: duckdb
       path: ../data/whoop.duckdb
       threads: 4
+      settings:
+        TimeZone: UTC
