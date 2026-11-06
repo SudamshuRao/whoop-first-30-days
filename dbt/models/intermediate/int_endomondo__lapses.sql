@@ -5,7 +5,8 @@ with gaps as (
 ),
 
 data_end as (
-    select max(start_ts) as data_end_ts from gaps
+    -- Collection end, not the latest workout: stray late rows would make everyone look lapsed.
+    select '{{ var("endomondo_valid_to") }}'::timestamptz as data_end_ts
 ),
 
 closed_lapses as (
