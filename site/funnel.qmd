@@ -119,8 +119,10 @@ if len(repeat) >= 50:
 fig.add_vline(x=28, line_dash="dot", annotation_text="14 days after detection", annotation_position="top left")
 fig.update_layout(title="Share of lapses that have ended, by days since the last workout",
                   xaxis_title="Days since last workout (a lapse starts counting at day 14)",
-                  yaxis_title="% back", yaxis_range=[0, 100], hovermode="x unified")
-fig
+                  yaxis_title="% back", yaxis_range=[0, 100], xaxis_range=[14, 180],
+                  hovermode="x unified", margin=dict(t=70),
+                  legend=dict(orientation="h", yanchor="top", y=-0.2, x=0))
+fig.show(config={"displayModeBar": False})
 ```
 
 Kaplan–Meier estimate. `{python} f"{n_censored:,}"` lapses were still open when data collection ended; they count as "not yet back" for as long as they were observed, rather than being dropped or counted as never returning.
@@ -142,8 +144,8 @@ if len(past):
         textposition="outside"))
     fig.update_layout(title="Back within 14 days of the lapse being detected (95% CI)",
                       xaxis_title="% back within 14 days", xaxis_range=[0, 100],
-                      yaxis=dict(autorange="reversed"), margin=dict(l=180))
-    fig
+                      yaxis=dict(autorange="reversed"), margin=dict(l=180, t=70))
+    fig.show(config={"displayModeBar": False})
 ```
 
 **Why the past-only baseline:** an earlier version compared each member with their whole-history average, which includes months after the lapse. That version put the "under half of usual" group at `{python} pct(share_of(ahead, "under half of usual"))` back within 14 days. Using only the past it is `{python} pct(share_of(past, "under half of usual"))`. The gap to the other groups went from `{python} f"{gap_ahead:.0f}"` to `{python} f"{gap_past:.0f}"` points, so the smaller number is the one reported here. The `{python} f"{n_repeat:,}"` "back after 12+ weeks away" lapses are members with no workouts in that 12-week window.
