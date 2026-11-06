@@ -47,11 +47,12 @@ select
     return_ts,
     lapse_days,
     is_censored,
-    -- true/false when we can tell; null when the data ends before the return window closes
+    -- true/false when we can tell; null when the data ends before the return window closes.
+    -- Counted in whole days, the same rule as the Kaplan-Meier curves on the site.
     case
         when not is_censored
-            then lapse_days <= {{ var('lapse_days') }} + {{ var('return_window_days') }}
-        when lapse_days > {{ var('lapse_days') }} + {{ var('return_window_days') }}
+            then floor(lapse_days) <= {{ var('lapse_days') }} + {{ var('return_window_days') }}
+        when floor(lapse_days) > {{ var('lapse_days') }} + {{ var('return_window_days') }}
             then false
     end                                                       as returned_within_window
 from all_lapses
