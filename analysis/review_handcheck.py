@@ -51,7 +51,7 @@ def save(path: Path, labels: dict) -> None:
 
 def legend(th: pd.DataFrame, full: bool) -> None:
     if full:
-        print("\nLabel what the review talks about, good or bad. A review can have several themes or none.")
+        print("\nTag EVERY theme the review mentions, even in passing, good or bad - not just its main point.\nA review can have several themes or none.")
         for i, r in enumerate(th.itertuples(), 1):
             print(f"  {i}  {r.theme:<18} {r.definition}")
         print("Type numbers (e.g. '1 4'). Enter alone = none.  b = back   g = full guide   q = save and quit\n")
