@@ -1,6 +1,7 @@
 -- How well the keyword rules agree with hand labels, one row per split and theme.
 --   dev:  the first 100 reviews, adjudicated after seeing the rules; used to improve the rules.
---   test: 60 fresh reviews labelled blind after the rules were frozen; the only figures to report.
+--   test: 60 fresh reviews labelled blind after the rules were frozen, one yes/no per theme; the figures to report.
+--   test_pass1: the same 60, first quick pass (theme numbers); kept to show how labelling method matters.
 -- Precision: of the reviews the rule tagged, the share the hand label agrees with.
 -- Recall: of the reviews the hand label tagged, the share the rule also caught.
 with labels as (

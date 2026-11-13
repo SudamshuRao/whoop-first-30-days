@@ -13,6 +13,7 @@ Usage:
   uv run python analysis/review_handcheck.py export       # write the seed from the labels so far
   uv run python analysis/review_handcheck.py adjudicate   # dev set: settle disagreements
   uv run python analysis/review_handcheck.py label        # test set: 60 fresh reviews, blind
+  uv run python analysis/review_handcheck.py checklist    # test set again: one yes/no question per theme
 """
 import json
 import sys
@@ -26,7 +27,8 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / "reviews"
 FIRST_PASS = RAW / "hand_labels_progress.json"     # original blind dev labels (8 themes)
 ADJUDICATED = RAW / "hand_labels_adjudicated.json"
-TEST = RAW / "hand_labels_test.json"
+TEST = RAW / "hand_labels_test.json"                 # first pass: theme numbers per review
+CHECKLIST = RAW / "hand_labels_test_checklist.json"  # second pass: yes/no per theme (used as the test labels)
 SEED = ROOT / "dbt" / "seeds" / "review_hand_labels.csv"
 DEV_N, TEST_N, TEST_SEED = 100, 60, 7
 
@@ -78,13 +80,19 @@ def export(con) -> None:
     for rid, labs in first.items():
         final = adj.get(rid, labs)
         rows += [{"split": "dev", "review_id": rid, "theme": t, "is_mentioned": int(t in final)} for t in th]
-    if len(test) >= TEST_N:
+    check = load(CHECKLIST)
+    if len(check) >= TEST_N:   # the checklist pass is the test set; the quick first pass is kept for comparison
+        rows += [{"split": "test", "review_id": rid, "theme": t, "is_mentioned": int(t in labs)}
+                 for rid, labs in check.items() for t in th]
+        rows += [{"split": "test_pass1", "review_id": rid, "theme": t, "is_mentioned": int(t in labs)}
+                 for rid, labs in test.items() for t in th]
+    elif len(test) >= TEST_N:
         rows += [{"split": "test", "review_id": rid, "theme": t, "is_mentioned": int(t in labs)}
                  for rid, labs in test.items() for t in th]
     pd.DataFrame(rows, columns=["split", "review_id", "theme", "is_mentioned"]).to_csv(SEED, index=False)
-    n_test = len(test) if len(test) >= TEST_N else 0
-    print(f"Wrote {SEED.relative_to(ROOT)}: {len(first)} dev reviews ({len(adj)} adjudicated), "
-          f"{n_test} test reviews. Now run: make build")
+    source = "checklist" if len(check) >= TEST_N else "first pass" if len(test) >= TEST_N else "none yet"
+    print(f"Wrote {SEED.relative_to(ROOT)}: {len(first)} dev reviews ({len(adj)} adjudicated); "
+          f"test labels from: {source}. Now run: make build")
 
 
 def adjudicate(con) -> None:
@@ -127,13 +135,17 @@ def adjudicate(con) -> None:
     export(con)
 
 
-def label(con) -> None:
-    th = themes(con)
+def test_sample(con) -> pd.DataFrame:
     dev = set(load(FIRST_PASS))
-    test = load(TEST)
     pool = con.sql("select review_id, content from fct_reviews where is_since_whoop_5 order by review_id").df()
     pool = pool[~pool["review_id"].isin(dev)]
-    sample = pool.sample(n=TEST_N, random_state=TEST_SEED).reset_index(drop=True)
+    return pool.sample(n=TEST_N, random_state=TEST_SEED).reset_index(drop=True)
+
+
+def label(con) -> None:
+    th = themes(con)
+    test = load(TEST)
+    sample = test_sample(con)
     legend(th, full=True)
     print("Take your time: about 20-30 seconds a review. Check the numbers before pressing Enter.")
     i = 0
@@ -164,12 +176,73 @@ def label(con) -> None:
     export(con)
 
 
+def kappa(a: list, b: list) -> float:
+    """Cohen's kappa for two lists of 0/1 labels."""
+    n = len(a)
+    po = sum(x == y for x, y in zip(a, b)) / n
+    pa, pb = sum(a) / n, sum(b) / n
+    pe = pa * pb + (1 - pa) * (1 - pb)
+    return float("nan") if pe == 1 else (po - pe) / (1 - pe)
+
+
+def consistency(th: pd.DataFrame) -> None:
+    first, second = load(TEST), load(CHECKLIST)
+    both = [r for r in second if r in first]
+    if not both:
+        return
+    print(f"\nFirst pass vs checklist, same {len(both)} reviews:")
+    print(f"  {'theme':<18} {'pass 1':>6} {'checklist':>9} {'agree':>6} {'kappa':>6}")
+    for t in th["theme"]:
+        a = [int(t in first[r]) for r in both]
+        b = [int(t in second[r]) for r in both]
+        agree = sum(x == y for x, y in zip(a, b)) / len(both)
+        print(f"  {t:<18} {sum(a):>6} {sum(b):>9} {agree:>6.0%} {kappa(a, b):>6.2f}")
+
+
+def checklist(con) -> None:
+    th = themes(con)
+    done = load(CHECKLIST)
+    sample = test_sample(con)
+    print("\nSecond pass on the same test reviews. For each review, answer every theme separately.")
+    print("y = the review mentions this, even in passing, good or bad.  Enter or n = it does not.")
+    print("r = restart this review   q = save and quit\n")
+    i = 0
+    while i < len(sample):
+        rid, text = sample.loc[i, "review_id"], sample.loc[i, "content"]
+        if rid in done:
+            i += 1
+            continue
+        show(i, len(sample), text)
+        chosen, k, restart = [], 0, False
+        while k < len(th):
+            r = th.iloc[k]
+            a = input(f"  {k + 1} {r.theme:<18} {r.definition}? [y/N] ").strip().lower()
+            if a == "q":
+                print(f"\nChecked {len(done)} of {len(sample)}. Run again to carry on.")
+                consistency(th); export(con); return
+            if a == "r":
+                restart = True; break
+            if a not in {"", "y", "n"}:
+                print("    ? y, n or Enter"); continue
+            if a == "y":
+                chosen.append(r.theme)
+            k += 1
+        if restart:
+            continue
+        done[rid] = sorted(chosen); save(CHECKLIST, done)
+        print(f"  saved: {', '.join(done[rid]) or 'none'}")
+        i += 1
+    print(f"\nChecked {len(done)} of {len(sample)} test reviews.")
+    consistency(th)
+    export(con)
+
+
 def main() -> int:
     mode = sys.argv[1] if len(sys.argv) > 1 else ""
-    if mode not in {"export", "adjudicate", "label"}:
+    if mode not in {"export", "adjudicate", "label", "checklist"}:
         print(__doc__); return 1
     con = connect() if mode != "export" else None
-    {"export": export, "adjudicate": adjudicate, "label": label}[mode](con)
+    {"export": export, "adjudicate": adjudicate, "label": label, "checklist": checklist}[mode](con)
     return 0
 
 
