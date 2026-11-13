@@ -81,7 +81,7 @@ In the HeartSteps trial, a suggestion raised steps in the next 30 minutes by **`
 
 ## What members say (indicative only)
 
-Of `{python} f"{int(rev['n']):,}"` Google Play reviews since the WHOOP 5.0 launch, `{python} pct(rev['neg'])` are negative and `{python} pct(rev['pos'])` positive; `{python} pct(rev['general'])` are general praise or complaint with no specific topic. Positive reviews talk about habits, accountability and coaching; negative ones about price and cancelling, and app reliability. **These are keyword mentions, not validated shares:** checked blind against hand labels, only the data-accuracy rule held up (`{python} f"{int(acc_rule['true_pos'])}"` of `{python} f"{int(acc_rule['n_by_rule'])}"` tags confirmed). Reviews are also self-selected and far more negative than WHOOP's store rating.
+Of `{python} f"{int(rev['n']):,}"` Google Play reviews since the WHOOP 5.0 launch, `{python} pct(rev['neg'])` are negative and `{python} pct(rev['pos'])` positive; `{python} pct(rev['general'])` are general praise or complaint with no specific topic. The words most over-represented in negative reviews include *membership, cancel, money, paid* and *trial*, alongside *crashes* and *stopped working*; in positive ones, *helps, habits, goals* and *accountable* (`analysis/review_explore.py`). **Theme shares are not claimed:** checked blind against hand labels, only the data-accuracy keyword rule held up (`{python} f"{int(acc_rule['true_pos'])}"` of `{python} f"{int(acc_rule['n_by_rule'])}"` tags confirmed). Reviews are also self-selected and far more negative than WHOOP's store rating.
 
 ## The test
 
