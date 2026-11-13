@@ -1,5 +1,47 @@
 [
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "First 30 Days",
+    "section": "",
+    "text": "WHOOP is adding proactive features such as Coach check-ins. This project asks where a proactive message could matter most, and how WHOOP should test it: when a member stops training. It uses three public datasets, a dbt and DuckDB pipeline, and a pre-registered experiment readout, and ends in a one-page recommendation."
+  },
+  {
+    "objectID": "index.html#how-it-is-built",
+    "href": "index.html#how-it-is-built",
+    "title": "First 30 Days",
+    "section": "How it is built",
+    "text": "How it is built\n\n\n\n\n\n\nflowchart LR\n  A[\"Public data&lt;br/&gt;Endomondo · HeartSteps · Google Play\"] --&gt; B[\"dbt staging&lt;br/&gt;clean, typed, tested\"]\n  B --&gt; C[\"dbt intermediate&lt;br/&gt;gaps, lapses, decision points\"]\n  C --&gt; D[\"dbt marts&lt;br/&gt;facts and dimensions\"]\n  D --&gt; E[\"Python analysis&lt;br/&gt;survival, WCLS, power\"]\n  E --&gt; F[\"This site&lt;br/&gt;Quarto\"]\n\n\n\n\n\n\n\nEvery analysis page reads only the marts, and every number on them is computed at build time; none is typed in by hand. (The data audit deliberately reads the raw files.)\nThe experiment plan was committed before any outcome was analyzed (see the readout’s commit history), and the readout replicates the published result.\nLeakage was found and fixed. Comparing members with their whole history, future included, overstated the “slowdown before a lapse” signal; a past-only baseline replaced it (details).\nNot everything worked. Keyword themes for app reviews were checked blind against hand labels, and only one rule held up, so the memo claims no theme shares. The data audit explains what each dataset can and cannot support.\n\nCode, models and tests: github.com/SudamshuRao/whoop-first-30-days"
+  },
+  {
+    "objectID": "audit.html",
+    "href": "audit.html",
+    "title": "Data audit",
+    "section": "",
+    "text": "Dataset\nVerdict\nUsed for\n\n\n\n\nEndomondo (FitRec)\nGo, with a narrower question. Only long-term users are in the data, so it cannot give retention or activation rates.\nLapses and returns among established members\n\n\nHeartSteps V1\nGo. The randomization ran as designed.\nThe experiment readout"
+  },
+  {
+    "objectID": "audit.html#summary",
+    "href": "audit.html#summary",
+    "title": "Data audit",
+    "section": "",
+    "text": "Dataset\nVerdict\nUsed for\n\n\n\n\nEndomondo (FitRec)\nGo, with a narrower question. Only long-term users are in the data, so it cannot give retention or activation rates.\nLapses and returns among established members\n\n\nHeartSteps V1\nGo. The randomization ran as designed.\nThe experiment readout"
+  },
+  {
+    "objectID": "audit.html#endomondo-who-is-in-the-data",
+    "href": "audit.html#endomondo-who-is-in-the-data",
+    "title": "Data audit",
+    "section": "Endomondo: who is in the data?",
+    "text": "Endomondo: who is in the data?\nThe file holds 962,190 workouts from 1,364 users. 213 workouts (0.02%) have impossible dates, before Endomondo launched in 2007 or after the data was collected, and are dropped. Another 54 workouts from January 2016 are also dropped: collection ended at the turn of the year, so that month is incomplete (about 15,000 workouts a month before it).\nThe bigger finding is who was kept. The median user has 584.5 workouts over 3.4 years, and only 7 users have fewer than 10. Real app data always has many people who try the app a few times and leave. Their absence means the dataset was built from long-term users, so any retention rate measured here would be near 100% by construction.\n\n\n                            \n                                            \n\n\nDecision: the project does not report retention or activation rates from this data. It studies what long-term members do have plenty of: lapses (14 or more days without a workout) and returns."
+  },
+  {
+    "objectID": "audit.html#heartsteps-did-the-trial-run-as-designed",
+    "href": "audit.html#heartsteps-did-the-trial-run-as-designed",
+    "title": "Data audit",
+    "section": "HeartSteps: did the trial run as designed?",
+    "text": "HeartSteps: did the trial run as designed?\nOf 8,274 decision points, 6,590 (79.6%) were available for randomization. Among those, 59.4% received a suggestion, against a design of 60%.\n\n\n\n\n\n\n\n\n\nCheck\nNo suggestion\nSuggestion sent\nReads as\n\n\n\n\nMissing 30-minute step outcome\n11.6%\n12.2%\nMissing data is not driven by the nudge\n\n\nMean log steps in the 30 minutes before\n3.08\n3.01\nGroups looked alike beforehand\n\n\n\nDecision: go. Excluded from analysis: decision points with no recorded context, and 3 suggestions sent while the participant was marked unavailable.\nThis audit deliberately does not compare step counts after the nudge. That comparison is in the experiment readout, after the analysis plan was written down."
+  },
+  {
     "objectID": "memo.html",
     "href": "memo.html",
     "title": "Memo: what to do when a member lapses",
@@ -40,6 +82,48 @@
     "title": "Memo: what to do when a member lapses",
     "section": "What this cannot tell us",
     "text": "What this cannot tell us\n\nNone of this is WHOOP data. Endomondo members (2007-2015) were long-term, self-selected trackers; HeartSteps had 37 sedentary adults receiving walking prompts. WHOOP’s baseline and effect sizes will differ, which is why the plan sizes for a range of lifts.\nLapse findings are associations, not causes. Only a randomized test answers whether a check-in brings members back.\nThe review themes are not validated beyond the accuracy rule; they describe what members talk about, not how many feel it."
+  },
+  {
+    "objectID": "funnel.html",
+    "href": "funnel.html",
+    "title": "Lapses and returns",
+    "section": "",
+    "text": "Lapses are common but mostly temporary. The 1,364 members had 10,321 lapses (14+ days without a workout), about 2.0 a year for the median member. The median lapse lasts 26 days.\n55.2% come back within 14 days of the lapse being detected (95% CI 54.3% to 56.2%), and 83.5% within 90 days.\nA comeback is fragile. When a member returns after 12+ weeks away and goes quiet again, only 36.2% are back within 14 days, against 54.8% to 61.9% for everyone else.\nA milder slowdown matters less than it first looked. Measured against the member’s own last 12 weeks, members at under half their usual volume return about 5 points less often than the other activity groups. An earlier version that used each member’s whole history, future included, put the gap at 11 points.\n\nThese are associations in observational data, not causes. The data holds only long-term members (see the data audit)."
+  },
+  {
+    "objectID": "funnel.html#the-answer-in-four-lines",
+    "href": "funnel.html#the-answer-in-four-lines",
+    "title": "Lapses and returns",
+    "section": "",
+    "text": "Lapses are common but mostly temporary. The 1,364 members had 10,321 lapses (14+ days without a workout), about 2.0 a year for the median member. The median lapse lasts 26 days.\n55.2% come back within 14 days of the lapse being detected (95% CI 54.3% to 56.2%), and 83.5% within 90 days.\nA comeback is fragile. When a member returns after 12+ weeks away and goes quiet again, only 36.2% are back within 14 days, against 54.8% to 61.9% for everyone else.\nA milder slowdown matters less than it first looked. Measured against the member’s own last 12 weeks, members at under half their usual volume return about 5 points less often than the other activity groups. An earlier version that used each member’s whole history, future included, put the gap at 11 points.\n\nThese are associations in observational data, not causes. The data holds only long-term members (see the data audit)."
+  },
+  {
+    "objectID": "funnel.html#how-fast-do-members-come-back",
+    "href": "funnel.html#how-fast-do-members-come-back",
+    "title": "Lapses and returns",
+    "section": "How fast do members come back?",
+    "text": "How fast do members come back?\n\n\n                            \n                                            \n\n\nKaplan–Meier estimate. 648 lapses were still open when data collection ended; they count as “not yet back” for as long as they were observed, rather than being dropped or counted as never returning."
+  },
+  {
+    "objectID": "funnel.html#who-comes-back-fastest",
+    "href": "funnel.html#who-comes-back-fastest",
+    "title": "Lapses and returns",
+    "section": "Who comes back fastest?",
+    "text": "Who comes back fastest?\nActivity in the 28 days before the lapse, compared with the same member’s previous 12 weeks. This is something a live trigger could compute, because it uses only the past.\n\n\n                            \n                                            \n\n\nWhy the past-only baseline: an earlier version compared each member with their whole-history average, which includes months after the lapse. That version put the “under half of usual” group at 48.5% back within 14 days. Using only the past it is 54.8%. The gap to the other groups went from 11 to 5 points, so the smaller number is the one reported here. The 601 “back after 12+ weeks away” lapses are members with no workouts in that 12-week window."
+  },
+  {
+    "objectID": "funnel.html#what-did-not-matter-much",
+    "href": "funnel.html#what-did-not-matter-much",
+    "title": "Lapses and returns",
+    "section": "What did not matter much",
+    "text": "What did not matter much\nShare back within 14 days, by group:\n\nTraining rhythm: every 2-3 days 55%, near-daily 55%, weekly or less 53%\nPrimary sport: cycling 56%, other 57%, running 55%, strength 56%, walking 54%\nSeason the lapse started: Dec-Feb 61%, Jun-Aug 55%, Mar-May 55%, Sep-Nov 51% (calendar months; members’ hemisphere is unknown)\n\nRhythm and sport barely move the number. Autumn lapses run a little longer than winter ones, consistent with holiday breaks that end in January, but that is a guess, not something this data can show."
+  },
+  {
+    "objectID": "funnel.html#why-14-days-not-a-personal-threshold",
+    "href": "funnel.html#why-14-days-not-a-personal-threshold",
+    "title": "Lapses and returns",
+    "section": "Why 14 days, not a personal threshold",
+    "text": "Why 14 days, not a personal threshold\nA personal rule (a gap of at least 3x the member’s usual gap) flagged 13.6% of all gaps against 1.0% for 14 days. Most members train almost daily, so the personal rule treated a long weekend as a lapse. As a trigger for check-ins it would message the median member about 19 times a year, mostly about a normal rest break. A personal trigger needs a floor, such as at least 7 days, before it would be usable."
   },
   {
     "objectID": "readout.html",
@@ -124,89 +208,5 @@
     "title": "Experiment readout: proactive activity suggestions",
     "section": "What this cannot tell us",
     "text": "What this cannot tell us\n\nWHOOP members are not these participants. These were sedentary adults in 2015 receiving walking prompts; WHOOP members are active and the behaviour that matters may be training, not walking.\nThirty minutes is not retention. A short-term step bump does not show that nudges bring lapsed members back. The power analysis sizes the WHOOP test that would answer that."
-  },
-  {
-    "objectID": "audit.html",
-    "href": "audit.html",
-    "title": "Data audit",
-    "section": "",
-    "text": "Dataset\nVerdict\nUsed for\n\n\n\n\nEndomondo (FitRec)\nGo, with a narrower question. Only long-term users are in the data, so it cannot give retention or activation rates.\nLapses and returns among established members\n\n\nHeartSteps V1\nGo. The randomization ran as designed.\nThe experiment readout"
-  },
-  {
-    "objectID": "audit.html#summary",
-    "href": "audit.html#summary",
-    "title": "Data audit",
-    "section": "",
-    "text": "Dataset\nVerdict\nUsed for\n\n\n\n\nEndomondo (FitRec)\nGo, with a narrower question. Only long-term users are in the data, so it cannot give retention or activation rates.\nLapses and returns among established members\n\n\nHeartSteps V1\nGo. The randomization ran as designed.\nThe experiment readout"
-  },
-  {
-    "objectID": "audit.html#endomondo-who-is-in-the-data",
-    "href": "audit.html#endomondo-who-is-in-the-data",
-    "title": "Data audit",
-    "section": "Endomondo: who is in the data?",
-    "text": "Endomondo: who is in the data?\nThe file holds 962,190 workouts from 1,364 users. 213 workouts (0.02%) have impossible dates, before Endomondo launched in 2007 or after the data was collected, and are dropped. Another 54 workouts from January 2016 are also dropped: collection ended at the turn of the year, so that month is incomplete (about 15,000 workouts a month before it).\nThe bigger finding is who was kept. The median user has 584.5 workouts over 3.4 years, and only 7 users have fewer than 10. Real app data always has many people who try the app a few times and leave. Their absence means the dataset was built from long-term users, so any retention rate measured here would be near 100% by construction.\n\n\n                            \n                                            \n\n\nDecision: the project does not report retention or activation rates from this data. It studies what long-term members do have plenty of: lapses (14 or more days without a workout) and returns."
-  },
-  {
-    "objectID": "audit.html#heartsteps-did-the-trial-run-as-designed",
-    "href": "audit.html#heartsteps-did-the-trial-run-as-designed",
-    "title": "Data audit",
-    "section": "HeartSteps: did the trial run as designed?",
-    "text": "HeartSteps: did the trial run as designed?\nOf 8,274 decision points, 6,590 (79.6%) were available for randomization. Among those, 59.4% received a suggestion, against a design of 60%.\n\n\n\n\n\n\n\n\n\nCheck\nNo suggestion\nSuggestion sent\nReads as\n\n\n\n\nMissing 30-minute step outcome\n11.6%\n12.2%\nMissing data is not driven by the nudge\n\n\nMean log steps in the 30 minutes before\n3.08\n3.01\nGroups looked alike beforehand\n\n\n\nDecision: go. Excluded from analysis: decision points with no recorded context, and 3 suggestions sent while the participant was marked unavailable.\nThis audit deliberately does not compare step counts after the nudge. That comparison is in the experiment readout, after the analysis plan was written down."
-  },
-  {
-    "objectID": "funnel.html",
-    "href": "funnel.html",
-    "title": "Lapses and returns",
-    "section": "",
-    "text": "Lapses are common but mostly temporary. The 1,364 members had 10,321 lapses (14+ days without a workout), about 2.0 a year for the median member. The median lapse lasts 26 days.\n55.2% come back within 14 days of the lapse being detected (95% CI 54.3% to 56.2%), and 83.5% within 90 days.\nA comeback is fragile. When a member returns after 12+ weeks away and goes quiet again, only 36.2% are back within 14 days, against 54.8% to 61.9% for everyone else.\nA milder slowdown matters less than it first looked. Measured against the member’s own last 12 weeks, members at under half their usual volume return about 5 points less often than the other activity groups. An earlier version that used each member’s whole history, future included, put the gap at 11 points.\n\nThese are associations in observational data, not causes. The data holds only long-term members (see the data audit)."
-  },
-  {
-    "objectID": "funnel.html#the-answer-in-four-lines",
-    "href": "funnel.html#the-answer-in-four-lines",
-    "title": "Lapses and returns",
-    "section": "",
-    "text": "Lapses are common but mostly temporary. The 1,364 members had 10,321 lapses (14+ days without a workout), about 2.0 a year for the median member. The median lapse lasts 26 days.\n55.2% come back within 14 days of the lapse being detected (95% CI 54.3% to 56.2%), and 83.5% within 90 days.\nA comeback is fragile. When a member returns after 12+ weeks away and goes quiet again, only 36.2% are back within 14 days, against 54.8% to 61.9% for everyone else.\nA milder slowdown matters less than it first looked. Measured against the member’s own last 12 weeks, members at under half their usual volume return about 5 points less often than the other activity groups. An earlier version that used each member’s whole history, future included, put the gap at 11 points.\n\nThese are associations in observational data, not causes. The data holds only long-term members (see the data audit)."
-  },
-  {
-    "objectID": "funnel.html#how-fast-do-members-come-back",
-    "href": "funnel.html#how-fast-do-members-come-back",
-    "title": "Lapses and returns",
-    "section": "How fast do members come back?",
-    "text": "How fast do members come back?\n\n\n                            \n                                            \n\n\nKaplan–Meier estimate. 648 lapses were still open when data collection ended; they count as “not yet back” for as long as they were observed, rather than being dropped or counted as never returning."
-  },
-  {
-    "objectID": "funnel.html#who-comes-back-fastest",
-    "href": "funnel.html#who-comes-back-fastest",
-    "title": "Lapses and returns",
-    "section": "Who comes back fastest?",
-    "text": "Who comes back fastest?\nActivity in the 28 days before the lapse, compared with the same member’s previous 12 weeks. This is something a live trigger could compute, because it uses only the past.\n\n\n                            \n                                            \n\n\nWhy the past-only baseline: an earlier version compared each member with their whole-history average, which includes months after the lapse. That version put the “under half of usual” group at 48.5% back within 14 days. Using only the past it is 54.8%. The gap to the other groups went from 11 to 5 points, so the smaller number is the one reported here. The 601 “back after 12+ weeks away” lapses are members with no workouts in that 12-week window."
-  },
-  {
-    "objectID": "funnel.html#what-did-not-matter-much",
-    "href": "funnel.html#what-did-not-matter-much",
-    "title": "Lapses and returns",
-    "section": "What did not matter much",
-    "text": "What did not matter much\nShare back within 14 days, by group:\n\nTraining rhythm: every 2-3 days 55%, near-daily 55%, weekly or less 53%\nPrimary sport: cycling 56%, other 57%, running 55%, strength 56%, walking 54%\nSeason the lapse started: Dec-Feb 61%, Jun-Aug 55%, Mar-May 55%, Sep-Nov 51% (calendar months; members’ hemisphere is unknown)\n\nRhythm and sport barely move the number. Autumn lapses run a little longer than winter ones, consistent with holiday breaks that end in January, but that is a guess, not something this data can show."
-  },
-  {
-    "objectID": "funnel.html#why-14-days-not-a-personal-threshold",
-    "href": "funnel.html#why-14-days-not-a-personal-threshold",
-    "title": "Lapses and returns",
-    "section": "Why 14 days, not a personal threshold",
-    "text": "Why 14 days, not a personal threshold\nA personal rule (a gap of at least 3x the member’s usual gap) flagged 13.6% of all gaps against 1.0% for 14 days. Most members train almost daily, so the personal rule treated a long weekend as a lapse. As a trigger for check-ins it would message the median member about 19 times a year, mostly about a normal rest break. A personal trigger needs a floor, such as at least 7 days, before it would be usable."
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "First 30 Days",
-    "section": "",
-    "text": "WHOOP is adding proactive features such as Coach check-ins. This project asks where a proactive message could matter most, and how WHOOP should test it: when a member stops training. It uses three public datasets, a dbt and DuckDB pipeline, and a pre-registered experiment readout, and ends in a one-page recommendation."
-  },
-  {
-    "objectID": "index.html#how-it-is-built",
-    "href": "index.html#how-it-is-built",
-    "title": "First 30 Days",
-    "section": "How it is built",
-    "text": "How it is built\n\n\n\n\n\n\nflowchart LR\n  A[\"Public data&lt;br/&gt;Endomondo · HeartSteps · Google Play\"] --&gt; B[\"dbt staging&lt;br/&gt;clean, typed, tested\"]\n  B --&gt; C[\"dbt intermediate&lt;br/&gt;gaps, lapses, decision points\"]\n  C --&gt; D[\"dbt marts&lt;br/&gt;facts and dimensions\"]\n  D --&gt; E[\"Python analysis&lt;br/&gt;survival, WCLS, power\"]\n  E --&gt; F[\"This site&lt;br/&gt;Quarto\"]\n\n\n\n\n\n\n\nEvery analysis page reads only the marts, and every number on them is computed at build time; none is typed in by hand. (The data audit deliberately reads the raw files.)\nThe experiment plan was committed before any outcome was analyzed (see the readout’s commit history), and the readout replicates the published result.\nLeakage was found and fixed. Comparing members with their whole history, future included, overstated the “slowdown before a lapse” signal; a past-only baseline replaced it (details).\nNot everything worked. Keyword themes for app reviews were checked blind against hand labels, and only one rule held up, so the memo claims no theme shares. The data audit explains what each dataset can and cannot support.\n\nCode, models and tests: github.com/SudamshuRao/whoop-first-30-days"
   }
 ]
