@@ -1,0 +1,39 @@
+name: whoop_first_30_days
+version: "1.0.0"
+config-version: 2
+profile: whoop
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  whoop_first_30_days:
+    staging:
+      +materialized: table
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+vars:
+  # Endomondo launched in 2007, so earlier dates are broken device clocks.
+  # Collection ended at the turn of 2016: January 2016 has 54 workouts vs ~15,000 a month
+  # before it, so it is a partial month. This date is also the data end for open lapses.
+  endomondo_valid_from: "2007-01-01 00:00:00+00"
+  endomondo_valid_to: "2016-01-01 00:00:00+00"
+  # A lapse is a gap of this many days or more between a member's workouts.
+  lapse_days: 14
+  # "Returned" means a workout within this many days after the lapse is detected.
+  return_window_days: 14
+  # WHOOP 5.0 and MG launched on this date, with new membership tiers; reviews are compared before and after.
+  whoop_5_launch_date: "2025-05-08"
+
+seeds:
+  whoop_first_30_days:
+    review_themes:
+      +column_types: {theme: varchar, label: varchar, definition: varchar, pattern: varchar}
+    review_hand_labels:
+      +column_types: {split: varchar, review_id: varchar, theme: varchar, is_mentioned: integer}
