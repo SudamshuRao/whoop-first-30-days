@@ -1,0 +1,35 @@
+# Republish the site to GitHub Pages on every push to main.
+# The data is not in the repo, so this never re-runs the analysis: Quarto reuses the
+# results saved in site/_freeze, which `make site` updates locally before each commit.
+# If a page changed without a local render, its freeze is stale and this job fails on purpose.
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Jupyter (Quarto checks for it; nothing is executed)
+        run: pip install jupyter
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+
+      - uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+          path: site
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
