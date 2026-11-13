@@ -1,0 +1,212 @@
+[
+  {
+    "objectID": "memo.html",
+    "href": "memo.html",
+    "title": "Memo: what to do when a member lapses",
+    "section": "",
+    "text": "TipRecommendation\n\n\n\nTest a single, specific check-in on day 14 of a lapse, and judge it by whether members come back, week by week. Expect a small effect that fades: plan the test to detect a 2-point lift, which needs about 19,316 lapsed members."
+  },
+  {
+    "objectID": "memo.html#why-lapses-are-the-right-moment",
+    "href": "memo.html#why-lapses-are-the-right-moment",
+    "title": "Memo: what to do when a member lapses",
+    "section": "Why lapses are the right moment",
+    "text": "Why lapses are the right moment\n\nThey are common. In 10,321 lapses (14+ days without a workout) among long-term Endomondo members, the median member lapsed about 2.0 times a year.\nMost are temporary, so there is something to win. 55% were back within 14 days of the lapse being detected (95% CI 54% to 56%); the median lapse lasted 26 days.\nThe first 30 days after a comeback are fragile. When a member returning from 12+ weeks away goes quiet again, only 36% are back within 14 days. These members are the ones a check-in could help most.\nAutumn lapses ran longer than winter ones (51% vs 61% back within 14 days), so the test should run across seasons or randomize within them."
+  },
+  {
+    "objectID": "memo.html#what-a-nudge-can-and-cannot-do",
+    "href": "memo.html#what-a-nudge-can-and-cannot-do",
+    "title": "Memo: what to do when a member lapses",
+    "section": "What a nudge can and cannot do",
+    "text": "What a nudge can and cannot do\nIn the HeartSteps trial, a suggestion raised steps in the next 30 minutes by +16.1% (95% CI +0.5% to +34.2%). Two details shape the design:\n\nIt fades. The effect was +55% on day 0 and +4% by day 30, and ratings did not warn that it was happening. So measure the effect by week, not only overall.\nSpecific beats generic. Walking suggestions worked (+23%); generic “get up and move” prompts did not (+7%, CI includes zero). The check-in should name one concrete action."
+  },
+  {
+    "objectID": "memo.html#what-members-say-indicative-only",
+    "href": "memo.html#what-members-say-indicative-only",
+    "title": "Memo: what to do when a member lapses",
+    "section": "What members say (indicative only)",
+    "text": "What members say (indicative only)\nOf 1,413 Google Play reviews since the WHOOP 5.0 launch, 41% are negative and 50% positive; 39% are general praise or complaint with no specific topic. The words most over-represented in negative reviews include membership, cancel, money, paid and trial, alongside crashes and stopped working; in positive ones, helps, habits, goals and accountable (analysis/review_explore.py). Theme shares are not claimed: checked blind against hand labels, only the data-accuracy keyword rule held up (6 of 6 tags confirmed). Reviews are also self-selected and far more negative than WHOOP’s store rating."
+  },
+  {
+    "objectID": "memo.html#the-test",
+    "href": "memo.html#the-test",
+    "title": "Memo: what to do when a member lapses",
+    "section": "The test",
+    "text": "The test\n\n\n\n\n\n\n\nWho\nMembers reaching day 14 without a workout, each enrolled once\n\n\nArms\nSpecific check-in vs no message, 50/50\n\n\nPrimary metric\nBack within 14 days (a recorded workout)\n\n\nAlso report\nThe effect by week since enrolment; back within 28 days\n\n\nGuardrails\nNotification opt-outs; membership cancellations within 30 days\n\n\n\n\n\n\n\n\n\n\n\n\nLift to detect\nMembers needed\nWeeks to enrol, 50k eligible\nWeeks, 100k eligible\n\n\n\n\n+1 point\n77,454\n37\n19\n\n\n+2 points\n19,316\n9\n5\n\n\n+3 points\n8,562\n4\n2\n\n\n+5 points\n3,064\n1\n1\n\n\n\n80% power, two-sided α = 0.05, baseline 55%, from 2.17 lapses per member-year; add 2 weeks for the outcome window. At a 50,000-member eligible base, a 2-point lift takes about 9 weeks. A simulation on the real lapse outcomes confirmed the sizing (79.5% power). Each member is enrolled once because a member’s lapses resemble each other: counting every lapse would understate uncertainty by a factor of 1.40. Adjusting for what is known at detection explains only 4.9% of the outcome, so it would shrink the test only slightly."
+  },
+  {
+    "objectID": "memo.html#what-this-cannot-tell-us",
+    "href": "memo.html#what-this-cannot-tell-us",
+    "title": "Memo: what to do when a member lapses",
+    "section": "What this cannot tell us",
+    "text": "What this cannot tell us\n\nNone of this is WHOOP data. Endomondo members (2007-2015) were long-term, self-selected trackers; HeartSteps had 37 sedentary adults receiving walking prompts. WHOOP’s baseline and effect sizes will differ, which is why the plan sizes for a range of lifts.\nLapse findings are associations, not causes. Only a randomized test answers whether a check-in brings members back.\nThe review themes are not validated beyond the accuracy rule; they describe what members talk about, not how many feel it."
+  },
+  {
+    "objectID": "readout.html",
+    "href": "readout.html",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "",
+    "text": "NoteStatus: results added\n\n\n\nThe analysis plan at the bottom of this page was committed before any outcome was compared (commit e39c0a7). The results were computed and committed afterwards (b3e15ea), exactly as planned. The plan text below is unchanged."
+  },
+  {
+    "objectID": "readout.html#results",
+    "href": "readout.html#results",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "Results",
+    "text": "Results\nThe analysis below follows the plan further down this page exactly. The plan was committed first (e39c0a7) and the results second (b3e15ea); there are no deviations.\n\nThe headline, and how confident to be\n\nPrimary: +16.1% (95% CI +0.5% to +34.2%), p = 0.043. The published analysis of the same trial found +14% (p = .06), so the two agree closely.\nSensitivity: treating missing step counts as zero gives +12.2% (95% CI -1.3% to +27.7%), p = 0.078. The same evidence lands on either side of p = .05 depending on how missing data is handled, so the effect should be read as modest and uncertain, not as proven.\n\n\n\nThe effect fades\n\n\n                            \n                                            \n\n\nOn the first day a suggestion added +55.4% (95% CI +14.0% to +111.7%). By day 20 it was +19.2% (95% CI +2.9% to +38.2%), and by day 30 +4.5% (95% CI -11.0% to +22.6%), no longer distinguishable from zero. The model assumes a straight-line decline, so the exact shape is an approximation; the decline itself is clear (-1.3% per day, p = 0.027) and matches the published finding that the effect started large and faded.\n\n\nWhat worked and what did not\n\n\n                            \n                                            \n\n\nWalking suggestions worked (+23.2% (95% CI +4.2% to +45.6%); published +24%). Anti-sedentary suggestions did not (+7.0% (95% CI -11.9% to +30.1%)). Location made no clear difference: both intervals cross zero.\n\n\nGuardrails\n\n\n                            \n                                            \n\n\nNo guardrail was flagged. “Bad” ratings went from 14.5% in week 1 to 14.0% in week 6 (peaking at 19.1% in week 5), “no response” from 21.5% to 26.4%, and snoozes never passed 1.4%.\nThe more useful finding is what the guardrails missed: ratings stayed flat while the effect itself disappeared. Participants stopped acting on suggestions without telling anyone they were tired of them.\n\n\nWhat this means for WHOOP\n\nTest proactive check-ins, and plan for the fade. Measure the effect by week, not just overall; a check-in that works in week one may do nothing by week five.\nMake the ask specific. Walking suggestions, which named an action, worked; generic “get up and move” prompts did not.\nDo not rely on ratings as the fatigue guardrail. Track the behavioural effect itself over time, and in a member-level test also track opt-outs and churn, which this design could not compare.\nSize the test for a small effect. If the WHOOP effect is in this range, the test needs many members; the power analysis works out how many.\n\n\n\nNotes on implementation\n\n“Last full study week” in the guardrail rule was taken as week 6, because the trial ran six weeks; weeks 7 to 9 contain only 278 suggestions from a few late participants.\nAverage steps are reported for decision points with no suggestion (235); the published 253 was an average over all decision points, so the step figures are close but not identical in definition."
+  },
+  {
+    "objectID": "readout.html#the-decision-this-informs",
+    "href": "readout.html#the-decision-this-informs",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "The decision this informs",
+    "text": "The decision this informs\nWHOOP is adding proactive features such as Coach check-ins. The question for a product team is whether an unprompted nudge changes what members do soon after it arrives, and whether that is worth building and testing on WHOOP members. This readout cannot answer that for WHOOP directly. It uses a public trial to estimate whether nudges like this work at all, how large the effect is, and whether it fades, so that a WHOOP A/B test can be sized and designed well."
+  },
+  {
+    "objectID": "readout.html#the-experiment",
+    "href": "readout.html#the-experiment",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "The experiment",
+    "text": "The experiment\nHeartSteps V1 was a six-week trial with sedentary adults. Five times a day, at moments when a participant was available (not driving, phone connected, not already exercising), the app randomly decided whether to send an activity suggestion. Each person was randomized hundreds of times, so every participant contributes to both arms. This design is called a micro-randomized trial.\n\nParticipants: 37 (the published analysis sample)\nRandomized decision points: 6,331, excluding 259 during participants’ travel, as in the published analysis\nSuggestions sent: 3,755 (59.3%; the design was 60%)"
+  },
+  {
+    "objectID": "readout.html#hypothesis",
+    "href": "readout.html#hypothesis",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "Hypothesis",
+    "text": "Hypothesis\nSending an activity suggestion at an available decision point increases the number of steps taken in the next 30 minutes, compared with sending nothing."
+  },
+  {
+    "objectID": "readout.html#primary-metric",
+    "href": "readout.html#primary-metric",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "Primary metric",
+    "text": "Primary metric\nSteps in the 30 minutes after the decision point, from the wrist tracker, analyzed as log(steps + 0.5) because step counts are heavily skewed. Results are reported as a percentage change and as extra steps at the average."
+  },
+  {
+    "objectID": "readout.html#analysis-method",
+    "href": "readout.html#analysis-method",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "Analysis method",
+    "text": "Analysis method\n\nModel: regression of the primary metric on the treatment indicator centred at its randomization probability (sent minus 0.6), controlling for log steps in the 30 minutes before. Because the randomization probability is constant, this is the weighted and centred least squares estimator built for micro-randomized trials, with all weights equal to 1.\nUncertainty: standard errors clustered by participant, with a t distribution on 36 degrees of freedom, because there are only 37 people and their decision points are not independent.\nMissing outcome: the primary analysis uses decision points with a recorded 30-minute step count (5,746 of 6,331). The file already records 1,889 windows as zero steps, so a missing value means no tracker data rather than no walking. Missing outcomes are balanced between arms in this sample (9.1% with no suggestion vs 9.3% with one), which is what makes a complete-case comparison fair. A missing “before” count is set to zero with an indicator added to the model.\nSensitivity analysis: repeat the primary model treating every missing outcome as zero steps."
+  },
+  {
+    "objectID": "readout.html#pre-specified-secondary-analyses",
+    "href": "readout.html#pre-specified-secondary-analyses",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "Pre-specified secondary analyses",
+    "text": "Pre-specified secondary analyses\n\nDoes the effect fade? Add an interaction between treatment and study day.\nDoes the type of suggestion matter? Walking suggestions and anti-sedentary (“get up and move”) suggestions, each compared with no suggestion. The public files do not document the per-type randomization probabilities, so they are estimated from the data (walking 33%, anti-sedentary 26% of decision points) and used for centring.\nDoes location matter? Home or work versus elsewhere.\n\nAnything else looked at later is labelled exploratory. Secondary results are treated as hypotheses for WHOOP’s own test, not as proven."
+  },
+  {
+    "objectID": "readout.html#guardrails-1",
+    "href": "readout.html#guardrails-1",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "Guardrails",
+    "text": "Guardrails\nA micro-randomized trial gives every participant both arms, so person-level guardrails such as dropout or uninstalling cannot be compared between arms here. A member-level A/B test at WHOOP could compare them, and should. What this trial can track is how participants rated the suggestions they received, week by week:\n\n\n\n\n\n\n\nGuardrail\nFlag if\n\n\n\n\nShare of sent suggestions rated “bad”\nrises by more than 10 points from the first to the last full study week\n\n\nShare of sent suggestions with no response\nrises by more than 10 points from the first to the last full study week\n\n\nShare of sent suggestions snoozed\nabove 5% in any week"
+  },
+  {
+    "objectID": "readout.html#decision-rule",
+    "href": "readout.html#decision-rule",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "Decision rule",
+    "text": "Decision rule\n\n\n\n\n\n\n\nResult\nRecommendation\n\n\n\n\nPrimary effect positive, 95% CI excludes zero, no guardrail flags\nGo: build proactive check-ins and run a member-level A/B test\n\n\nPrimary CI includes zero, but a pre-specified secondary analysis shows a positive effect with a CI excluding zero (for example early weeks only, or walking suggestions only); or a positive primary effect with a guardrail flag\nGo with changes: test only the version that worked, with a frequency cap\n\n\nNo pre-specified analysis shows a positive effect with a CI excluding zero\nNo go: do not build on this evidence"
+  },
+  {
+    "objectID": "readout.html#benchmark",
+    "href": "readout.html#benchmark",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "Benchmark",
+    "text": "Benchmark\nThe published primary analysis (Klasnja et al., 2019) found that a suggestion increased 30-minute steps by 14% (p = .06), about 35 steps over a 253-step average, with an effect that started larger and faded over time. Walking suggestions increased steps by 24% (p = .02); anti-sedentary suggestions had no detectable effect. I expect to land near these numbers. The most likely source of any difference is missing data: the published analysis imputed missing step counts, while this one uses complete cases and reports zero-filling as a sensitivity check."
+  },
+  {
+    "objectID": "readout.html#what-this-cannot-tell-us",
+    "href": "readout.html#what-this-cannot-tell-us",
+    "title": "Experiment readout: proactive activity suggestions",
+    "section": "What this cannot tell us",
+    "text": "What this cannot tell us\n\nWHOOP members are not these participants. These were sedentary adults in 2015 receiving walking prompts; WHOOP members are active and the behaviour that matters may be training, not walking.\nThirty minutes is not retention. A short-term step bump does not show that nudges bring lapsed members back. The power analysis sizes the WHOOP test that would answer that."
+  },
+  {
+    "objectID": "audit.html",
+    "href": "audit.html",
+    "title": "Data audit",
+    "section": "",
+    "text": "Dataset\nVerdict\nUsed for\n\n\n\n\nEndomondo (FitRec)\nGo, with a narrower question. Only long-term users are in the data, so it cannot give retention or activation rates.\nLapses and returns among established members\n\n\nHeartSteps V1\nGo. The randomization ran as designed.\nThe experiment readout"
+  },
+  {
+    "objectID": "audit.html#summary",
+    "href": "audit.html#summary",
+    "title": "Data audit",
+    "section": "",
+    "text": "Dataset\nVerdict\nUsed for\n\n\n\n\nEndomondo (FitRec)\nGo, with a narrower question. Only long-term users are in the data, so it cannot give retention or activation rates.\nLapses and returns among established members\n\n\nHeartSteps V1\nGo. The randomization ran as designed.\nThe experiment readout"
+  },
+  {
+    "objectID": "audit.html#endomondo-who-is-in-the-data",
+    "href": "audit.html#endomondo-who-is-in-the-data",
+    "title": "Data audit",
+    "section": "Endomondo: who is in the data?",
+    "text": "Endomondo: who is in the data?\nThe file holds 962,190 workouts from 1,364 users. 213 workouts (0.02%) have impossible dates, before Endomondo launched in 2007 or after the data was collected, and are dropped. Another 54 workouts from January 2016 are also dropped: collection ended at the turn of the year, so that month is incomplete (about 15,000 workouts a month before it).\nThe bigger finding is who was kept. The median user has 584.5 workouts over 3.4 years, and only 7 users have fewer than 10. Real app data always has many people who try the app a few times and leave. Their absence means the dataset was built from long-term users, so any retention rate measured here would be near 100% by construction.\n\n\n                            \n                                            \n\n\nDecision: the project does not report retention or activation rates from this data. It studies what long-term members do have plenty of: lapses (14 or more days without a workout) and returns."
+  },
+  {
+    "objectID": "audit.html#heartsteps-did-the-trial-run-as-designed",
+    "href": "audit.html#heartsteps-did-the-trial-run-as-designed",
+    "title": "Data audit",
+    "section": "HeartSteps: did the trial run as designed?",
+    "text": "HeartSteps: did the trial run as designed?\nOf 8,274 decision points, 6,590 (79.6%) were available for randomization. Among those, 59.4% received a suggestion, against a design of 60%.\n\n\n\n\n\n\n\n\n\nCheck\nNo suggestion\nSuggestion sent\nReads as\n\n\n\n\nMissing 30-minute step outcome\n11.6%\n12.2%\nMissing data is not driven by the nudge\n\n\nMean log steps in the 30 minutes before\n3.08\n3.01\nGroups looked alike beforehand\n\n\n\nDecision: go. Excluded from analysis: decision points with no recorded context, and 3 suggestions sent while the participant was marked unavailable.\nThis audit deliberately does not compare step counts after the nudge. That comparison is in the experiment readout, after the analysis plan was written down."
+  },
+  {
+    "objectID": "funnel.html",
+    "href": "funnel.html",
+    "title": "Lapses and returns",
+    "section": "",
+    "text": "Lapses are common but mostly temporary. The 1,364 members had 10,321 lapses (14+ days without a workout), about 2.0 a year for the median member. The median lapse lasts 26 days.\n55.2% come back within 14 days of the lapse being detected (95% CI 54.3% to 56.2%), and 83.5% within 90 days.\nA comeback is fragile. When a member returns after 12+ weeks away and goes quiet again, only 36.2% are back within 14 days, against 54.8% to 61.9% for everyone else.\nA milder slowdown matters less than it first looked. Measured against the member’s own last 12 weeks, members at under half their usual volume return about 5 points less often than the other activity groups. An earlier version that used each member’s whole history, future included, put the gap at 11 points.\n\nThese are associations in observational data, not causes. The data holds only long-term members (see the data audit)."
+  },
+  {
+    "objectID": "funnel.html#the-answer-in-four-lines",
+    "href": "funnel.html#the-answer-in-four-lines",
+    "title": "Lapses and returns",
+    "section": "",
+    "text": "Lapses are common but mostly temporary. The 1,364 members had 10,321 lapses (14+ days without a workout), about 2.0 a year for the median member. The median lapse lasts 26 days.\n55.2% come back within 14 days of the lapse being detected (95% CI 54.3% to 56.2%), and 83.5% within 90 days.\nA comeback is fragile. When a member returns after 12+ weeks away and goes quiet again, only 36.2% are back within 14 days, against 54.8% to 61.9% for everyone else.\nA milder slowdown matters less than it first looked. Measured against the member’s own last 12 weeks, members at under half their usual volume return about 5 points less often than the other activity groups. An earlier version that used each member’s whole history, future included, put the gap at 11 points.\n\nThese are associations in observational data, not causes. The data holds only long-term members (see the data audit)."
+  },
+  {
+    "objectID": "funnel.html#how-fast-do-members-come-back",
+    "href": "funnel.html#how-fast-do-members-come-back",
+    "title": "Lapses and returns",
+    "section": "How fast do members come back?",
+    "text": "How fast do members come back?\n\n\n                            \n                                            \n\n\nKaplan–Meier estimate. 648 lapses were still open when data collection ended; they count as “not yet back” for as long as they were observed, rather than being dropped or counted as never returning."
+  },
+  {
+    "objectID": "funnel.html#who-comes-back-fastest",
+    "href": "funnel.html#who-comes-back-fastest",
+    "title": "Lapses and returns",
+    "section": "Who comes back fastest?",
+    "text": "Who comes back fastest?\nActivity in the 28 days before the lapse, compared with the same member’s previous 12 weeks. This is something a live trigger could compute, because it uses only the past.\n\n\n                            \n                                            \n\n\nWhy the past-only baseline: an earlier version compared each member with their whole-history average, which includes months after the lapse. That version put the “under half of usual” group at 48.5% back within 14 days. Using only the past it is 54.8%. The gap to the other groups went from 11 to 5 points, so the smaller number is the one reported here. The 601 “back after 12+ weeks away” lapses are members with no workouts in that 12-week window."
+  },
+  {
+    "objectID": "funnel.html#what-did-not-matter-much",
+    "href": "funnel.html#what-did-not-matter-much",
+    "title": "Lapses and returns",
+    "section": "What did not matter much",
+    "text": "What did not matter much\nShare back within 14 days, by group:\n\nTraining rhythm: every 2-3 days 55%, near-daily 55%, weekly or less 53%\nPrimary sport: cycling 56%, other 57%, running 55%, strength 56%, walking 54%\nSeason the lapse started: Dec-Feb 61%, Jun-Aug 55%, Mar-May 55%, Sep-Nov 51% (calendar months; members’ hemisphere is unknown)\n\nRhythm and sport barely move the number. Autumn lapses run a little longer than winter ones, consistent with holiday breaks that end in January, but that is a guess, not something this data can show."
+  },
+  {
+    "objectID": "funnel.html#why-14-days-not-a-personal-threshold",
+    "href": "funnel.html#why-14-days-not-a-personal-threshold",
+    "title": "Lapses and returns",
+    "section": "Why 14 days, not a personal threshold",
+    "text": "Why 14 days, not a personal threshold\nA personal rule (a gap of at least 3x the member’s usual gap) flagged 13.6% of all gaps against 1.0% for 14 days. Most members train almost daily, so the personal rule treated a long weekend as a lapse. As a trigger for check-ins it would message the median member about 19 times a year, mostly about a normal rest break. A personal trigger needs a floor, such as at least 7 days, before it would be usable."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "First 30 Days",
+    "section": "",
+    "text": "WHOOP is adding proactive features such as Coach check-ins. This project asks where a proactive message could matter most, and how WHOOP should test it: when a member stops training. It uses three public datasets, a dbt and DuckDB pipeline, and a pre-registered experiment readout, and ends in a one-page recommendation."
+  },
+  {
+    "objectID": "index.html#how-it-is-built",
+    "href": "index.html#how-it-is-built",
+    "title": "First 30 Days",
+    "section": "How it is built",
+    "text": "How it is built\n\n\n\n\n\n\nflowchart LR\n  A[\"Public data&lt;br/&gt;Endomondo · HeartSteps · Google Play\"] --&gt; B[\"dbt staging&lt;br/&gt;clean, typed, tested\"]\n  B --&gt; C[\"dbt intermediate&lt;br/&gt;gaps, lapses, decision points\"]\n  C --&gt; D[\"dbt marts&lt;br/&gt;facts and dimensions\"]\n  D --&gt; E[\"Python analysis&lt;br/&gt;survival, WCLS, power\"]\n  E --&gt; F[\"This site&lt;br/&gt;Quarto\"]\n\n\n\n\n\n\n\nEvery analysis page reads only the marts, and every number on them is computed at build time; none is typed in by hand. (The data audit deliberately reads the raw files.)\nThe experiment plan was committed before any outcome was analyzed (see the readout’s commit history), and the readout replicates the published result.\nLeakage was found and fixed. Comparing members with their whole history, future included, overstated the “slowdown before a lapse” signal; a past-only baseline replaced it (details).\nNot everything worked. Keyword themes for app reviews were checked blind against hand labels, and only one rule held up, so the memo claims no theme shares. The data audit explains what each dataset can and cannot support.\n\nCode, models and tests: github.com/SudamshuRao/whoop-first-30-days"
+  }
+]
