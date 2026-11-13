@@ -213,6 +213,15 @@ def checklist(con) -> None:
             i += 1
             continue
         show(i, len(sample), text)
+        g = input("  0 general only: just general praise or complaint, no specific topic? [y/N] ").strip().lower()
+        if g == "q":
+            print(f"\nChecked {len(done)} of {len(sample)}. Run again to carry on.")
+            consistency(th); export(con); return
+        if g == "y":
+            done[rid] = []; save(CHECKLIST, done)
+            print("  saved: none (general only)")
+            i += 1
+            continue
         chosen, k, restart = [], 0, False
         while k < len(th):
             r = th.iloc[k]
