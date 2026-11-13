@@ -1,5 +1,112 @@
 ---
-title: "memo"
+title: "Memo: what to do when a member lapses"
+subtitle: "A recommendation and test plan for WHOOP, from public data"
 ---
 
-Coming in a later phase.
+```{python}
+#| echo: false
+import sys
+from pathlib import Path
+
+import duckdb
+import pandas as pd
+
+sys.path.insert(0, str(Path("../analysis").resolve()))
+from lapse_data import REPEAT, load_lapses
+from survival import kaplan_meier, median_duration, returned_by
+import power
+import readout_models
+
+con = duckdb.connect("../data/whoop.duckdb", read_only=True)
+con.sql("set TimeZone = 'UTC'")
+
+def one(sql):
+    return con.sql(sql).fetchall()[0][0]
+
+def pct(x):
+    return f"{100 * x:.0f}%"
+
+# Lapses (same definitions and code as the Lapses & returns page)
+lapses = load_lapses(con)
+overall = kaplan_meier(lapses["lapse_days"], lapses["ended"])
+back14, back14_lo, back14_hi = returned_by(overall, 28)
+median_lapse = median_duration(overall)
+per_year = one("select median(n_lapses / (tenure_days / 365.25)) from dim_members where tenure_days > 0")
+repeat = lapses[lapses["activity_group"] == REPEAT]
+repeat_back14 = returned_by(kaplan_meier(repeat["lapse_days"], repeat["ended"]), 28)[0] if len(repeat) else float("nan")
+season = lapses["lapse_month"].map(lambda m: "Sep-Nov" if m in (9, 10, 11) else "Dec-Feb" if m in (12, 1, 2) else "other")
+autumn = returned_by(kaplan_meier(lapses.loc[season == "Sep-Nov", "lapse_days"], lapses.loc[season == "Sep-Nov", "ended"]), 28)[0]
+winter = returned_by(kaplan_meier(lapses.loc[season == "Dec-Feb", "lapse_days"], lapses.loc[season == "Dec-Feb", "ended"]), 28)[0]
+
+# Nudge experiment
+ro = readout_models.run_all(con)
+prim, d0, d30, walk, sed = ro["primary"], ro["by_day"][0], ro["by_day"][30], ro["walking"], ro["anti_sedentary"]
+
+# Test sizing
+pw = power.run_all(con)
+n2 = int(pw["sizes"].loc[0.02, "total"])
+weeks2_50k = pw["weeks"].loc[0.02, "50,000 members"]
+
+# Member voice (indicative only)
+rev = con.sql("""
+    select count(*) as n,
+           avg((sentiment = 'negative')::int) as neg,
+           avg((sentiment = 'positive')::int) as pos,
+           avg((n_themes = 0)::int) as general
+    from fct_reviews where is_since_whoop_5
+""").df().iloc[0]
+acc = con.sql("select * from fct_review_theme_accuracy where split = 'test'").df().set_index("theme")
+acc_rule = acc.loc["accuracy"]
+```
+
+::: {.callout-tip}
+## Recommendation
+
+**Test a single, specific check-in on day 14 of a lapse, and judge it by whether members come back, week by week.** Expect a small effect that fades: plan the test to detect a 2-point lift, which needs about **`{python} f"{n2:,}"` lapsed members**.
+:::
+
+## Why lapses are the right moment
+
+- **They are common.** In `{python} f"{len(lapses):,}"` lapses (14+ days without a workout) among long-term Endomondo members, the median member lapsed about **`{python} f"{per_year:.1f}"` times a year**.
+- **Most are temporary, so there is something to win.** **`{python} pct(back14)`** were back within 14 days of the lapse being detected (95% CI `{python} pct(back14_lo)` to `{python} pct(back14_hi)`); the median lapse lasted `{python} f"{median_lapse:.0f}"` days.
+- **The first 30 days after a comeback are fragile.** When a member returning from 12+ weeks away goes quiet again, only **`{python} pct(repeat_back14)`** are back within 14 days. These members are the ones a check-in could help most.
+- Autumn lapses ran longer than winter ones (`{python} pct(autumn)` vs `{python} pct(winter)` back within 14 days), so the test should run across seasons or randomize within them.
+
+## What a nudge can and cannot do
+
+In the HeartSteps trial, a suggestion raised steps in the next 30 minutes by **`{python} f"{prim['pct']:+.1f}"`%** (95% CI `{python} f"{prim['pct_lo']:+.1f}"`% to `{python} f"{prim['pct_hi']:+.1f}"`%). Two details shape the design:
+
+- **It fades.** The effect was `{python} f"{d0['pct']:+.0f}"`% on day 0 and `{python} f"{d30['pct']:+.0f}"`% by day 30, and ratings did not warn that it was happening. So measure the effect by week, not only overall.
+- **Specific beats generic.** Walking suggestions worked (`{python} f"{walk['pct']:+.0f}"`%); generic "get up and move" prompts did not (`{python} f"{sed['pct']:+.0f}"`%, CI includes zero). The check-in should name one concrete action.
+
+## What members say (indicative only)
+
+Of `{python} f"{int(rev['n']):,}"` Google Play reviews since the WHOOP 5.0 launch, `{python} pct(rev['neg'])` are negative and `{python} pct(rev['pos'])` positive; `{python} pct(rev['general'])` are general praise or complaint with no specific topic. Positive reviews talk about habits, accountability and coaching; negative ones about price and cancelling, and app reliability. **These are keyword mentions, not validated shares:** checked blind against hand labels, only the data-accuracy rule held up (`{python} f"{int(acc_rule['true_pos'])}"` of `{python} f"{int(acc_rule['n_by_rule'])}"` tags confirmed). Reviews are also self-selected and far more negative than WHOOP's store rating.
+
+## The test
+
+| | |
+|---|---|
+| **Who** | Members reaching day 14 without a workout, each enrolled once |
+| **Arms** | Specific check-in vs no message, 50/50 |
+| **Primary metric** | Back within 14 days (a recorded workout) |
+| **Also report** | The effect by week since enrolment; back within 28 days |
+| **Guardrails** | Notification opt-outs; membership cancellations within 30 days |
+
+```{python}
+#| echo: false
+#| output: asis
+rows = ["| Lift to detect | Members needed | Weeks to enrol, 50k eligible | Weeks, 100k eligible |", "|---|---|---|---|"]
+for lift, r in pw["sizes"].iterrows():
+    rows.append(f"| +{100 * lift:.0f} point{'s' if lift > 0.01 else ''} | {int(r.total):,} | {pw['weeks'].loc[lift, '50,000 members']:.0f} | "
+                f"{pw['weeks'].loc[lift, '100,000 members']:.0f} |")
+print("\n".join(rows))
+```
+
+80% power, two-sided α = 0.05, baseline `{python} pct(pw['p0'])`, from `{python} f"{pw['lapses_per_member_year']:.2f}"` lapses per member-year; add 2 weeks for the outcome window. At a 50,000-member eligible base, a 2-point lift takes about `{python} f"{weeks2_50k:.0f}"` weeks. A simulation on the real lapse outcomes confirmed the sizing (`{python} f"{100 * pw['sim_power_2pt']:.1f}"`% power). Each member is enrolled once because a member's lapses resemble each other: counting every lapse would understate uncertainty by a factor of `{python} f"{pw['design_effect']:.2f}"`. Adjusting for what is known at detection explains only `{python} f"{100 * pw['r2']:.1f}"`% of the outcome, so it would shrink the test only slightly.
+
+## What this cannot tell us
+
+- **None of this is WHOOP data.** Endomondo members (2007-2015) were long-term, self-selected trackers; HeartSteps had 37 sedentary adults receiving walking prompts. WHOOP's baseline and effect sizes will differ, which is why the plan sizes for a range of lifts.
+- **Lapse findings are associations,** not causes. Only a randomized test answers whether a check-in brings members back.
+- **The review themes are not validated** beyond the accuracy rule; they describe what members talk about, not how many feel it.
